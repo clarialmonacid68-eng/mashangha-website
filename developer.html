@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>张明 · AI开发者 — 码上好</title>
+<link rel="stylesheet" href="styles.css" />
+<style>
+.profile-hero { padding: 36px 40px 30px; border-bottom: 2px solid var(--ink); background: var(--coral-light); }
+.hero-inner { display: flex; gap: 22px; align-items: flex-start; max-width: 900px; margin: 0 auto; }
+.avatar-big { width: 78px; height: 78px; border-radius: 18px; background: var(--coral); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; color: #fff; flex-shrink: 0; border: 2px solid var(--ink); }
+.hero-main { flex: 1; }
+.hero-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; gap: 20px; }
+.dev-name-big { font-size: 24px; font-weight: 800; color: var(--ink); margin-bottom: 4px; }
+.dev-role-big { font-size: 14px; color: var(--gray); margin-bottom: 12px; font-weight: 600; }
+.badges { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.badge { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 5px 12px; border-radius: 10px; font-weight: 800; border: 1.5px solid var(--ink); }
+.badge-top { background: var(--yellow); color: var(--ink); }
+.badge-verify { background: var(--teal); color: #fff; }
+.badge-exp { background: #fff; color: var(--ink); }
+.bio { font-size: 14px; color: var(--ink); line-height: 1.7; max-width: 520px; font-weight: 500; }
+.hero-stats { display: flex; gap: 0; margin-top: 22px; padding-top: 20px; max-width: 480px; border-top: 2px dashed rgba(0,0,0,0.1); }
+.hstat { flex: 1; text-align: center; }
+.hstat-n { font-size: 19px; font-weight: 800; color: var(--ink); }
+.hstat-l { font-size: 11px; color: var(--gray); margin-top: 2px; font-weight: 600; }
+.stars { color: #F5A623; }
+.price-box { border: 2px solid var(--ink); border-radius: 16px; padding: 22px; min-width: 190px; text-align: center; flex-shrink: 0; background: #fff; }
+.price-from { font-size: 11px; color: var(--gray); margin-bottom: 4px; font-weight: 700; }
+.price-num { font-size: 28px; font-weight: 800; color: var(--coral); }
+.price-unit { font-size: 12px; color: var(--gray); margin-bottom: 16px; font-weight: 600; }
+.avail-row { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; color: var(--ink); margin-bottom: 14px; font-weight: 700; }
+.avail-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); }
+
+.content { max-width: 900px; margin: 0 auto; padding: 32px 40px 60px; display: grid; grid-template-columns: 1fr 250px; gap: 28px; }
+.tabs { display: flex; gap: 6px; margin-bottom: 24px; }
+.tab { font-size: 13px; padding: 10px 18px; cursor: pointer; color: var(--gray); border: 2px solid var(--ink); border-radius: 12px; background: #fff; font-weight: 700; transition: all 0.15s; }
+.tab.active { color: var(--ink); background: var(--yellow); }
+
+.sec-title { font-size: 13px; font-weight: 800; color: var(--ink); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 14px; }
+.skills-wrap { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+.skill-tag { font-size: 12px; padding: 6px 14px; border-radius: 10px; border: 2px solid var(--line); color: var(--gray); background: #fff; font-weight: 700; }
+.skill-tag.primary { background: var(--teal-light); color: var(--ink); border-color: var(--ink); }
+
+.portfolio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+.port-card { border: 2px solid var(--ink); border-radius: 14px; overflow: hidden; cursor: pointer; transition: all 0.15s; background: #fff; }
+.port-card:hover { transform: translate(-2px,-2px); box-shadow: 4px 4px 0 var(--ink); }
+.port-img { height: 110px; display: flex; align-items: center; justify-content: center; font-size: 36px; }
+.pi-1 { background: var(--yellow-light); } .pi-2 { background: var(--teal-light); } .pi-3 { background: var(--coral-light); } .pi-4 { background: #E8E0FF; }
+.port-info { padding: 14px; }
+.port-name { font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 3px; }
+.port-meta { font-size: 11px; color: var(--gray); font-weight: 600; }
+
+.review-list { display: flex; flex-direction: column; gap: 14px; }
+.review-card { border: 2px solid var(--ink); border-radius: 14px; padding: 18px; background: #fff; }
+.rev-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.rev-user { display: flex; align-items: center; gap: 9px; }
+.rev-av { width: 32px; height: 32px; border-radius: 50%; background: var(--yellow); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: var(--ink); border: 1.5px solid var(--ink); }
+.rev-name { font-size: 13px; font-weight: 800; color: var(--ink); }
+.rev-time { font-size: 11px; color: var(--gray); font-weight: 600; }
+.rev-stars { color: #F5A623; font-size: 14px; }
+.rev-text { font-size: 13px; color: var(--ink); line-height: 1.65; font-weight: 500; }
+.rev-project { font-size: 11px; color: var(--gray); margin-top: 8px; font-weight: 700; }
+
+.side-card { border: 2px solid var(--ink); border-radius: 14px; padding: 18px; margin-bottom: 14px; background: #fff; }
+.side-title { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--gray); margin-bottom: 12px; font-weight: 800; }
+.info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 2px dashed var(--line); font-size: 13px; }
+.info-row:last-child { border-bottom: none; }
+.info-key { color: var(--gray); font-weight: 600; }
+.info-val { color: var(--ink); font-weight: 800; }
+.info-val.green { color: #1A9E8E; }
+
+@media (max-width: 900px) {
+  .hero-top { flex-direction: column; }
+  .price-box { min-width: 100%; }
+  .content { grid-template-columns: 1fr; padding: 24px 20px; }
+  .portfolio-grid { grid-template-columns: 1fr; }
+  .profile-hero { padding: 24px 20px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo"><div class="logo-mark">码</div>码上好</a>
+  <a href="developers.html" class="nav-back">← 开发者列表</a>
+  <div class="nav-btns">
+    <button class="btn btn-ghost">发消息</button>
+    <button class="btn btn-primary" onclick="alert('邀请已发送（演示）')">邀请报价 →</button>
+  </div>
+</nav>
+
+<div class="profile-hero">
+  <div class="hero-inner">
+    <div class="avatar-big">张</div>
+    <div class="hero-main">
+      <div class="hero-top">
+        <div>
+          <div class="dev-name-big">张明</div>
+          <div class="dev-role-big">全栈AI开发工程师 · 上海</div>
+          <div class="badges">
+            <span class="badge badge-top">🏆 Top开发者</span>
+            <span class="badge badge-verify">✓ 平台认证</span>
+            <span class="badge badge-exp">3年经验</span>
+          </div>
+          <div class="bio">专注用AI工具快速构建实用应用程序。擅长微信小程序、Web全栈、企业管理系统。使用Cursor + Claude Code，交付效率是传统方式的5倍，价格更低，速度更快！</div>
+        </div>
+        <div class="price-box">
+          <div class="price-from">起步价</div>
+          <div class="price-num">¥800</div>
+          <div class="price-unit">/ 项目起</div>
+          <div class="avail-row"><div class="avail-dot"></div>当前可接单 🟢</div>
+          <button class="btn btn-primary btn-block" onclick="alert('邀请已发送（演示）')">邀请报价 →</button>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat"><div class="hstat-n">142</div><div class="hstat-l">完成项目</div></div>
+        <div class="hstat"><div class="hstat-n stars">★ 4.9</div><div class="hstat-l">综合评分</div></div>
+        <div class="hstat"><div class="hstat-n">98%</div><div class="hstat-l">按时交付</div></div>
+        <div class="hstat"><div class="hstat-n">72h</div><div class="hstat-l">平均响应</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  <div>
+    <div class="tabs">
+      <div class="tab active">技能 & 作品</div>
+      <div class="tab">客户评价 (142)</div>
+      <div class="tab">关于我</div>
+    </div>
+
+    <div class="sec-title">主要技能</div>
+    <div class="skills-wrap">
+      <span class="skill-tag primary">微信小程序</span>
+      <span class="skill-tag primary">Vue.js</span>
+      <span class="skill-tag primary">Node.js</span>
+      <span class="skill-tag">React</span>
+      <span class="skill-tag">MySQL</span>
+      <span class="skill-tag">MongoDB</span>
+      <span class="skill-tag">微信支付</span>
+      <span class="skill-tag">Claude API</span>
+      <span class="skill-tag">DeepSeek</span>
+      <span class="skill-tag">Cursor</span>
+      <span class="skill-tag">Claude Code</span>
+      <span class="skill-tag">Docker</span>
+    </div>
+
+    <div class="sec-title">作品案例</div>
+    <div class="portfolio-grid">
+      <div class="port-card">
+        <div class="port-img pi-1">🍜</div>
+        <div class="port-info">
+          <div class="port-name">连锁火锅点餐小程序</div>
+          <div class="port-meta">微信小程序 · 3天 · ¥4,500</div>
+        </div>
+      </div>
+      <div class="port-card">
+        <div class="port-img pi-2">📊</div>
+        <div class="port-info">
+          <div class="port-name">销售数据可视化看板</div>
+          <div class="port-meta">Vue + ECharts · 7天 · ¥8,000</div>
+        </div>
+      </div>
+      <div class="port-card">
+        <div class="port-img pi-3">🏋️</div>
+        <div class="port-info">
+          <div class="port-name">健身房会员管理系统</div>
+          <div class="port-meta">小程序+后台 · 10天 · ¥12,000</div>
+        </div>
+      </div>
+      <div class="port-card">
+        <div class="port-img pi-4">🤖</div>
+        <div class="port-info">
+          <div class="port-name">AI客服机器人（DeepSeek）</div>
+          <div class="port-meta">Web插件 · 2天 · ¥2,500</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-title">近期评价</div>
+    <div class="review-list">
+      <div class="review-card">
+        <div class="rev-top">
+          <div class="rev-user">
+            <div class="rev-av">李</div>
+            <div>
+              <div class="rev-name">李总 · 餐饮连锁</div>
+              <div class="rev-time">2周前</div>
+            </div>
+          </div>
+          <div class="rev-stars">★★★★★</div>
+        </div>
+        <div class="rev-text">速度超快，3天就交付了一个完整的点餐小程序，功能全部到位，界面也很好看。沟通顺畅，有问题响应及时。强烈推荐！</div>
+        <div class="rev-project">项目：餐厅点餐小程序 · ¥4,500</div>
+      </div>
+      <div class="review-card">
+        <div class="rev-top">
+          <div class="rev-user">
+            <div class="rev-av">王</div>
+            <div>
+              <div class="rev-name">王经理 · 科技公司</div>
+              <div class="rev-time">1个月前</div>
+            </div>
+          </div>
+          <div class="rev-stars">★★★★★</div>
+        </div>
+        <div class="rev-text">数据看板做得非常专业，图表清晰，中间有需求变动他也很配合调整。价格合理，下次还找他。</div>
+        <div class="rev-project">项目：销售数据看板 · ¥8,000</div>
+      </div>
+    </div>
+  </div>
+
+  <aside>
+    <div class="side-card">
+      <div class="side-title">基本信息</div>
+      <div class="info-row"><span class="info-key">所在城市</span><span class="info-val">上海</span></div>
+      <div class="info-row"><span class="info-key">入驻时间</span><span class="info-val">2024年3月</span></div>
+      <div class="info-row"><span class="info-key">在线状态</span><span class="info-val green">● 可接单</span></div>
+      <div class="info-row"><span class="info-key">响应时间</span><span class="info-val">72小时内</span></div>
+    </div>
+    <div class="side-card">
+      <div class="side-title">服务保障</div>
+      <div class="info-row"><span class="info-key">资金托管</span><span class="info-val green">✓ 平台保障</span></div>
+      <div class="info-row"><span class="info-key">售后服务</span><span class="info-val">30天免费</span></div>
+      <div class="info-row"><span class="info-key">按时交付率</span><span class="info-val">98%</span></div>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="alert('邀请已发送（演示）')">邀请报价 →</button>
+    <div style="font-size:12px;color:var(--gray);text-align:center;margin-top:10px;font-weight:600">平均24小时内回复</div>
+  </aside>
+</div>
+
+</body>
+</html>

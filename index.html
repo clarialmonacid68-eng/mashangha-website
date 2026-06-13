@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>码上好 — AI开发者服务平台</title>
+<link rel="stylesheet" href="styles.css" />
+<style>
+.hero { padding: 70px 40px 60px; text-align: center; border-bottom: 2px solid var(--ink); background: linear-gradient(180deg, var(--yellow-light) 0%, var(--cream) 100%); position: relative; overflow: hidden; }
+.blob { position: absolute; border-radius: 50%; opacity: 0.5; z-index: 0; }
+.blob1 { width: 180px; height: 180px; background: var(--teal-light); top: 40px; left: 6%; }
+.blob2 { width: 140px; height: 140px; background: var(--coral-light); bottom: 20px; right: 8%; }
+.hero-content { position: relative; z-index: 1; }
+.eyebrow { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; background: #fff; border: 2px solid var(--ink); border-radius: 20px; padding: 6px 16px; margin-bottom: 22px; font-weight: 700; }
+.hero h1 { font-size: 50px; font-weight: 800; line-height: 1.2; letter-spacing: -0.02em; color: var(--ink); max-width: 640px; margin: 0 auto 18px; }
+.hero h1 em { font-style: normal; color: var(--coral); position: relative; display: inline-block; }
+.hero h1 .hl { background: var(--yellow); padding: 0 8px; border-radius: 8px; transform: rotate(-1deg); display: inline-block; }
+.hero-sub { font-size: 17px; color: var(--gray); max-width: 480px; margin: 0 auto 32px; line-height: 1.7; font-weight: 500; }
+.hero-btns { display: flex; gap: 12px; justify-content: center; margin-bottom: 50px; }
+
+.stats { display: flex; justify-content: center; gap: 14px; max-width: 720px; margin: 0 auto; flex-wrap: wrap; }
+.stat { flex: 1; min-width: 130px; text-align: center; background: #fff; border: 2px solid var(--ink); border-radius: 14px; padding: 16px 12px; }
+.stat-num { font-size: 26px; font-weight: 800; color: var(--ink); }
+.stat-label { font-size: 12px; color: var(--gray); margin-top: 4px; font-weight: 600; }
+
+.steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+.step { padding: 26px 20px; border: 2px solid var(--ink); border-radius: 16px; background: #fff; position: relative; }
+.step:nth-child(1) { background: var(--yellow-light); }
+.step:nth-child(2) { background: var(--teal-light); }
+.step:nth-child(3) { background: var(--coral-light); }
+.step:nth-child(4) { background: #fff; }
+.step-num-circle { width: 34px; height: 34px; border-radius: 50%; background: var(--ink); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; margin-bottom: 14px; }
+.step-title { font-size: 15px; font-weight: 800; color: var(--ink); margin-bottom: 6px; }
+.step-desc { font-size: 13px; color: var(--gray); line-height: 1.6; font-weight: 500; }
+
+.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.mode-card { border-radius: 18px; padding: 36px; border: 2px solid var(--ink); position: relative; overflow: hidden; }
+.mode-coral { background: var(--coral); color: #fff; }
+.mode-light { background: #fff; }
+.mode-tag { display: inline-flex; font-size: 12px; padding: 4px 12px; border-radius: 20px; margin-bottom: 18px; font-weight: 800; border: 2px solid var(--ink); }
+.mode-coral .mode-tag { background: var(--yellow); color: var(--ink); }
+.mode-light .mode-tag { background: var(--teal-light); color: var(--ink); }
+.mode-title { font-size: 24px; font-weight: 800; line-height: 1.3; margin-bottom: 10px; letter-spacing: -0.01em; }
+.mode-light .mode-title { color: var(--ink); }
+.mode-desc { font-size: 14px; line-height: 1.7; margin-bottom: 24px; font-weight: 500; }
+.mode-coral .mode-desc { color: rgba(255,255,255,0.9); }
+.mode-light .mode-desc { color: var(--gray); }
+.mode-list { list-style: none; margin-bottom: 28px; display: flex; flex-direction: column; gap: 10px; }
+.mode-list li { font-size: 13px; display: flex; align-items: center; gap: 9px; font-weight: 700; }
+.mode-light .mode-list li { color: var(--ink); }
+.check { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; border: 2px solid var(--ink); font-weight: 800; }
+.mode-coral .check { background: var(--yellow); color: var(--ink); }
+.mode-light .check { background: var(--teal-light); color: var(--ink); }
+
+.devs-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+.dev-card { border: 2px solid var(--ink); border-radius: 16px; padding: 22px; cursor: pointer; transition: all 0.15s; text-decoration: none; display: block; background: #fff; }
+.dev-card:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--ink); }
+.dev-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.dev-av { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: #fff; flex-shrink: 0; border: 2px solid var(--ink); }
+.av-1 { background: var(--coral); } .av-2 { background: var(--teal); } .av-3 { background: var(--yellow); color: var(--ink); }
+.dev-name { font-size: 15px; font-weight: 800; color: var(--ink); }
+.dev-role { font-size: 12px; color: var(--gray); font-weight: 600; }
+.dev-skills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.skill { font-size: 11px; padding: 4px 10px; border-radius: 8px; background: var(--cream); color: var(--ink); border: 1.5px solid var(--line); font-weight: 700; }
+.dev-foot { display: flex; gap: 18px; padding-top: 14px; border-top: 2px dashed var(--line); }
+.dev-stat-v { font-size: 15px; font-weight: 800; color: var(--ink); }
+.dev-stat-l { font-size: 11px; color: var(--gray); font-weight: 600; }
+.stars { color: #F5A623; }
+
+.cta { background: var(--ink); border: 2px solid var(--ink); border-radius: 20px; margin: 0 40px 64px; padding: 44px; display: flex; align-items: center; justify-content: space-between; gap: 32px; color: #fff; }
+.cta-title { font-size: 26px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.01em; }
+.cta-sub { font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 14px; font-weight: 500; }
+.cta-perks { display: flex; flex-direction: column; gap: 7px; }
+.cta-perk { font-size: 13px; color: rgba(255,255,255,0.9); display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.perk-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--yellow); flex-shrink: 0; }
+.cta-btns { display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+.cta .btn-primary { background: var(--yellow); color: var(--ink); border-color: var(--yellow); box-shadow: 3px 3px 0 rgba(255,255,255,0.3); }
+.cta .btn-ghost { background: transparent; color: #fff; border-color: rgba(255,255,255,0.4); }
+
+@media (max-width: 900px) {
+  .hero h1 { font-size: 32px; }
+  .hero { padding: 48px 20px 40px; }
+  .stats { flex-direction: column; }
+  .steps, .modes, .devs-grid { grid-template-columns: 1fr; }
+  .cta { flex-direction: column; margin: 0 20px 40px; padding: 28px; align-items: flex-start; }
+  .cta-btns { width: 100%; }
+  .cta-btns .btn { width: 100%; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo"><div class="logo-mark">码</div>码上好</a>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">首页</a></li>
+    <li><a href="demand.html">需求广场</a></li>
+    <li><a href="developers.html">开发者</a></li>
+    <li><a href="#how">如何运作</a></li>
+    <li><a href="join.html">商家入驻</a></li>
+  </ul>
+  <div class="nav-btns">
+    <a href="#" class="btn btn-ghost">登录</a>
+    <a href="post-demand.html" class="btn btn-primary">发布需求</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="hero-content">
+    <div class="eyebrow">✨ AI 赋能 · 开发服务平台</div>
+    <h1>找AI开发者<br/>做你的<span class="hl">专属程序</span></h1>
+    <p class="hero-sub">把想法交给懂AI的开发者。发布需求，收到报价，资金托管，验收交付——一站搞定，超省心！</p>
+    <div class="hero-btns">
+      <a href="post-demand.html" class="btn btn-primary btn-lg">发布我的需求 →</a>
+      <a href="developers.html" class="btn btn-ghost btn-lg">浏览开发者</a>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-num">1,200+</div><div class="stat-label">认证AI开发者</div></div>
+      <div class="stat"><div class="stat-num">3,800+</div><div class="stat-label">已完成项目</div></div>
+      <div class="stat"><div class="stat-num">98%</div><div class="stat-label">客户满意度</div></div>
+      <div class="stat"><div class="stat-num">¥800起</div><div class="stat-label">项目起步价</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section bordered" id="how">
+  <div class="sec-header">
+    <div class="sec-eyebrow">使用流程</div>
+    <div class="sec-title">四步，从想法到交付 🎯</div>
+    <p class="sec-sub">不懂技术也没问题，清晰流程保障每个项目顺利完成</p>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num-circle">1</div>
+      <div class="step-title">描述需求</div>
+      <div class="step-desc">用自己的语言描述想要什么，系统帮你完善技术细节</div>
+    </div>
+    <div class="step">
+      <div class="step-num-circle">2</div>
+      <div class="step-title">收到报价</div>
+      <div class="step-desc">认证AI开发者主动报价，对比能力评分和案例</div>
+    </div>
+    <div class="step">
+      <div class="step-num-circle">3</div>
+      <div class="step-title">托管付款</div>
+      <div class="step-desc">验收通过才放款，每一分钱都有保障</div>
+    </div>
+    <div class="step">
+      <div class="step-num-circle">4</div>
+      <div class="step-title">验收交付</div>
+      <div class="step-desc">满意后放款，附30天售后保障</div>
+    </div>
+  </div>
+</section>
+
+<section class="section bordered">
+  <div class="sec-header">
+    <div class="sec-eyebrow">两种合作方式</div>
+    <div class="sec-title">按你的方式来 🙌</div>
+  </div>
+  <div class="modes">
+    <div class="mode-card mode-coral">
+      <div class="mode-tag">⭐ 推荐</div>
+      <div class="mode-title">发布需求<br/>让开发者来找你</div>
+      <div class="mode-desc">把需求发上来，平台1,200+认证开发者主动报价竞争，你只需挑选。</div>
+      <ul class="mode-list">
+        <li><span class="check">✓</span>AI辅助完善需求文档</li>
+        <li><span class="check">✓</span>多人竞价，透明定价</li>
+        <li><span class="check">✓</span>资金全程托管保障</li>
+        <li><span class="check">✓</span>30天免费售后</li>
+      </ul>
+      <a href="post-demand.html" class="btn btn-yellow">立即发布需求 →</a>
+    </div>
+    <div class="mode-card mode-light">
+      <div class="mode-tag">🔍 灵活</div>
+      <div class="mode-title">指定开发者<br/>直接邀请合作</div>
+      <div class="mode-desc">浏览认证开发者主页，查看技能、作品和评分，直接邀请报价。</div>
+      <ul class="mode-list">
+        <li><span class="check">✓</span>筛选行业/技术方向</li>
+        <li><span class="check">✓</span>查看真实案例和评价</li>
+        <li><span class="check">✓</span>在线沟通，快速启动</li>
+        <li><span class="check">✓</span>同样支持托管付款</li>
+      </ul>
+      <a href="developers.html" class="btn btn-teal">浏览开发者 →</a>
+    </div>
+  </div>
+</section>
+
+<section class="section bordered">
+  <div class="sec-header" style="display:flex;justify-content:space-between;align-items:flex-end">
+    <div>
+      <div class="sec-eyebrow">精选开发者</div>
+      <div class="sec-title" style="margin-bottom:0">平台认证AI开发者 🌟</div>
+    </div>
+    <a href="developers.html" class="btn btn-ghost">查看全部 →</a>
+  </div>
+  <div style="margin-top:32px">
+  <div class="devs-grid">
+    <a href="developer.html" class="dev-card">
+      <div class="dev-head">
+        <div class="dev-av av-1">张明</div>
+        <div><div class="dev-name">张明</div><div class="dev-role">全栈AI开发 · 上海</div></div>
+      </div>
+      <div class="dev-skills">
+        <span class="skill">微信小程序</span><span class="skill">Vue.js</span><span class="skill">Claude API</span><span class="skill">Cursor</span>
+      </div>
+      <div class="dev-foot">
+        <div><div class="dev-stat-v">142</div><div class="dev-stat-l">已完成</div></div>
+        <div><div class="dev-stat-v stars">★ 4.9</div><div class="dev-stat-l">评分</div></div>
+        <div><div class="dev-stat-v">¥800起</div><div class="dev-stat-l">起步价</div></div>
+      </div>
+    </a>
+    <a href="developer.html" class="dev-card">
+      <div class="dev-head">
+        <div class="dev-av av-2">林云</div>
+        <div><div class="dev-name">林云</div><div class="dev-role">AI自动化专家 · 深圳</div></div>
+      </div>
+      <div class="dev-skills">
+        <span class="skill">企业系统</span><span class="skill">数据看板</span><span class="skill">API对接</span><span class="skill">n8n</span>
+      </div>
+      <div class="dev-foot">
+        <div><div class="dev-stat-v">89</div><div class="dev-stat-l">已完成</div></div>
+        <div><div class="dev-stat-v stars">★ 4.8</div><div class="dev-stat-l">评分</div></div>
+        <div><div class="dev-stat-v">¥1,200起</div><div class="dev-stat-l">起步价</div></div>
+      </div>
+    </a>
+    <a href="developer.html" class="dev-card">
+      <div class="dev-head">
+        <div class="dev-av av-3">王佳</div>
+        <div><div class="dev-name">王佳</div><div class="dev-role">前端AI开发 · 北京</div></div>
+      </div>
+      <div class="dev-skills">
+        <span class="skill">H5落地页</span><span class="skill">React</span><span class="skill">v0.dev</span><span class="skill">Bolt</span>
+      </div>
+      <div class="dev-foot">
+        <div><div class="dev-stat-v">67</div><div class="dev-stat-l">已完成</div></div>
+        <div><div class="dev-stat-v stars">★ 4.7</div><div class="dev-stat-l">评分</div></div>
+        <div><div class="dev-stat-v">¥500起</div><div class="dev-stat-l">起步价</div></div>
+      </div>
+    </a>
+  </div>
+  </div>
+</section>
+
+<div class="cta">
+  <div>
+    <div class="cta-title">你会用AI开发？来入驻赚钱 💰</div>
+    <div class="cta-sub">把你的AI技能变成稳定收入，平台负责找客户</div>
+    <div class="cta-perks">
+      <div class="cta-perk"><span class="perk-dot"></span>0门槛入驻，填表即可申请</div>
+      <div class="cta-perk"><span class="perk-dot"></span>佣金低至10%，行业最低</div>
+      <div class="cta-perk"><span class="perk-dot"></span>资金托管结算，防止恶意不付款</div>
+    </div>
+  </div>
+  <div class="cta-btns">
+    <a href="join.html" class="btn btn-primary btn-lg">立即申请入驻 →</a>
+    <a href="join.html" class="btn btn-ghost">了解入驻条件</a>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer-logo">码上好</div>
+  <div class="footer-links">
+    <span class="footer-link">关于我们</span>
+    <span class="footer-link">服务协议</span>
+    <span class="footer-link">隐私政策</span>
+    <span class="footer-link">联系我们</span>
+  </div>
+  <div class="footer-copy">© 2025 码上好 AI开发平台</div>
+</footer>
+
+</body>
+</html>

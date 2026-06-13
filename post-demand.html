@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>发布需求 — 码上好</title>
+<link rel="stylesheet" href="styles.css" />
+<style>
+.stepper-wrap { padding: 32px 40px 24px; border-bottom: 2px solid var(--ink); background: var(--yellow-light); }
+.stepper { display: flex; align-items: center; max-width: 520px; margin: 0 auto; }
+.step-item { display: flex; align-items: center; gap: 8px; flex: 1; }
+.step-item:last-child { flex: 0; }
+.step-circle { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; flex-shrink: 0; border: 2px solid var(--ink); color: var(--gray); background: #fff; }
+.step-circle.active { background: var(--coral); color: #fff; }
+.step-circle.done { background: var(--teal); color: #fff; }
+.step-label { font-size: 13px; color: var(--gray); white-space: nowrap; font-weight: 700; }
+.step-label.active { color: var(--ink); }
+.step-line { flex: 1; height: 2px; background: var(--ink); margin: 0 12px; opacity: 0.15; }
+.step-line.done { opacity: 1; background: var(--teal); }
+
+.form-main { max-width: 780px; margin: 0 auto; padding: 40px 40px 64px; display: grid; grid-template-columns: 1fr 280px; gap: 32px; align-items: start; }
+.form-card { background: #fff; border: 2px solid var(--ink); border-radius: 18px; padding: 30px; }
+.form-title { font-size: 20px; font-weight: 800; color: var(--ink); margin-bottom: 4px; }
+.form-sub { font-size: 13px; color: var(--gray); margin-bottom: 26px; font-weight: 600; }
+.form-group { margin-bottom: 22px; }
+.form-label { font-size: 13px; color: var(--ink); margin-bottom: 6px; font-weight: 800; display: block; }
+.form-hint { font-size: 12px; color: var(--gray); margin-bottom: 8px; display: block; font-weight: 500; }
+.form-input { width: 100%; padding: 12px 14px; background: #fff; border: 2px solid var(--line); border-radius: 10px; color: var(--ink); font-family: inherit; font-size: 14px; outline: none; transition: border-color 0.2s; font-weight: 600; }
+.form-input:focus { border-color: var(--coral); }
+textarea.form-input { resize: none; min-height: 90px; }
+.form-select { width: 100%; padding: 12px 14px; background: #fff; border: 2px solid var(--line); border-radius: 10px; color: var(--ink); font-family: inherit; font-size: 14px; outline: none; cursor: pointer; font-weight: 600; }
+
+.budget-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+.budget-opt { padding: 12px 8px; border: 2px solid var(--line); border-radius: 10px; text-align: center; font-size: 12px; cursor: pointer; transition: all 0.15s; color: var(--gray); background: #fff; font-weight: 700; }
+.budget-opt:hover { border-color: var(--coral); }
+.budget-opt.sel { border-color: var(--ink); background: var(--coral); color: #fff; }
+
+.type-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+.type-opt { padding: 12px 8px; border: 2px solid var(--line); border-radius: 10px; text-align: center; font-size: 12px; cursor: pointer; transition: all 0.15s; color: var(--gray); display: flex; flex-direction: column; align-items: center; gap: 6px; background: #fff; font-weight: 700; }
+.type-opt .ic { font-size: 20px; }
+.type-opt:hover { border-color: var(--coral); }
+.type-opt.sel { border-color: var(--ink); background: var(--yellow); color: var(--ink); }
+
+.form-footer { display: flex; gap: 10px; margin-top: 4px; justify-content: flex-end; }
+
+.preview-card { background: var(--teal-light); border: 2px solid var(--ink); border-radius: 18px; padding: 22px; position: sticky; top: 90px; }
+.prev-title { font-size: 12px; font-weight: 800; color: var(--ink); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 16px; }
+.prev-item { margin-bottom: 14px; }
+.prev-label { font-size: 11px; color: var(--gray); margin-bottom: 3px; font-weight: 700; }
+.prev-val { font-size: 14px; color: var(--ink); font-weight: 800; }
+.prev-divider { height: 2px; background: rgba(0,0,0,0.06); margin: 14px 0; }
+.tip-box { background: #fff; border: 2px solid var(--ink); border-radius: 12px; padding: 14px; margin-top: 16px; }
+.tip-title { font-size: 12px; color: var(--coral); margin-bottom: 6px; font-weight: 800; }
+.tip-text { font-size: 12px; color: var(--gray); line-height: 1.6; font-weight: 500; }
+
+@media (max-width: 900px) {
+  .form-main { grid-template-columns: 1fr; padding: 24px 20px; }
+  .preview-card { position: static; }
+  .stepper-wrap { padding: 24px 20px; }
+  .step-label { font-size: 11px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo"><div class="logo-mark">码</div>码上好</a>
+  <a href="demand.html" class="nav-back">← 返回需求广场</a>
+  <div style="width:80px"></div>
+</nav>
+
+<div class="stepper-wrap">
+  <div class="stepper">
+    <div class="step-item">
+      <div class="step-circle active">1</div>
+      <span class="step-label active">描述需求</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item">
+      <div class="step-circle">2</div>
+      <span class="step-label">联系方式</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item">
+      <div class="step-circle">3</div>
+      <span class="step-label">确认发布</span>
+    </div>
+  </div>
+</div>
+
+<div class="form-main">
+  <div>
+    <div class="form-card">
+      <div class="form-title">描述你的需求 ✏️</div>
+      <div class="form-sub">填写越详细，收到的报价越精准，减少后期沟通成本</div>
+
+      <div class="form-group">
+        <label class="form-label">需求标题</label>
+        <span class="form-hint">一句话说清楚你要做什么</span>
+        <input class="form-input" type="text" placeholder="如：微信小程序点餐系统 / AI客服机器人 / 数据管理后台" value="餐厅点餐 + 会员积分小程序" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">项目类型</label>
+        <div class="type-grid">
+          <div class="type-opt sel"><span class="ic">📱</span>微信小程序</div>
+          <div class="type-opt"><span class="ic">🌐</span>Web网站</div>
+          <div class="type-opt"><span class="ic">⚙️</span>管理系统</div>
+          <div class="type-opt"><span class="ic">🤖</span>AI自动化</div>
+          <div class="type-opt"><span class="ic">📄</span>H5落地页</div>
+          <div class="type-opt"><span class="ic">✨</span>其他</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">详细描述</label>
+        <span class="form-hint">功能点、参考案例、特殊要求、现有资源等</span>
+        <textarea class="form-input">需要一个完整的餐厅小程序，功能包括：扫码点餐、在线支付（微信支付）、积分兑换、后台菜单管理、订单管理。界面要好看，参考海底捞风格，适配手机端。</textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">预算范围</label>
+        <div class="budget-grid">
+          <div class="budget-opt">¥500 以下</div>
+          <div class="budget-opt">¥500–2,000</div>
+          <div class="budget-opt sel">¥2,000–5,000</div>
+          <div class="budget-opt">¥5,000–20,000</div>
+          <div class="budget-opt">¥20,000+</div>
+          <div class="budget-opt">面议</div>
+        </div>
+      </div>
+
+      <div class="form-group" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <label class="form-label">期望交付周期</label>
+          <select class="form-select">
+            <option>3天内</option>
+            <option selected>7天内</option>
+            <option>14天内</option>
+            <option>1个月内</option>
+            <option>时间灵活</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">合作方式</label>
+          <select class="form-select">
+            <option selected>线上远程</option>
+            <option>本地优先</option>
+            <option>均可</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <button class="btn btn-ghost">保存草稿</button>
+        <button class="btn btn-primary" onclick="alert('下一步：填写联系方式（演示）')">下一步：填写联系方式 →</button>
+      </div>
+    </div>
+  </div>
+
+  <aside>
+    <div class="preview-card">
+      <div class="prev-title">📝 需求预览</div>
+      <div class="prev-item">
+        <div class="prev-label">标题</div>
+        <div class="prev-val">餐厅点餐 + 会员积分小程序</div>
+      </div>
+      <div class="prev-item">
+        <div class="prev-label">类型</div>
+        <div class="prev-val">微信小程序</div>
+      </div>
+      <div class="prev-item">
+        <div class="prev-label">预算</div>
+        <div class="prev-val" style="color:var(--coral)">¥2,000–5,000</div>
+      </div>
+      <div class="prev-item">
+        <div class="prev-label">交付周期</div>
+        <div class="prev-val">7天内</div>
+      </div>
+      <div class="prev-divider"></div>
+      <div style="font-size:12px;color:var(--gray);line-height:1.6;font-weight:600">发布后平台上的认证开发者将可以看到你的需求并主动报价</div>
+      <div class="tip-box">
+        <div class="tip-title">💡 小贴士</div>
+        <div class="tip-text">需求描述越详细，报价偏差越小，建议附上参考截图或类似产品链接</div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+document.querySelectorAll('.budget-opt').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.budget-opt').forEach(e=>e.classList.remove('sel'));
+    el.classList.add('sel');
+  });
+});
+document.querySelectorAll('.type-opt').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.type-opt').forEach(e=>e.classList.remove('sel'));
+    el.classList.add('sel');
+  });
+});
+</script>
+
+</body>
+</html>

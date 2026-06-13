@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>开发者 — 码上好</title>
+<link rel="stylesheet" href="styles.css" />
+<style>
+.page-hdr { padding: 32px 40px; border-bottom: 2px solid var(--ink); background: var(--teal-light); }
+.page-hdr-inner { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.page-title { font-size: 28px; font-weight: 800; color: var(--ink); letter-spacing: -0.01em; }
+.page-sub { font-size: 14px; color: var(--gray); margin-top: 3px; font-weight: 600; }
+.search-wrap { position: relative; flex: 1; max-width: 360px; }
+.search-input { width: 100%; padding: 11px 16px 11px 40px; background: #fff; border: 2px solid var(--ink); border-radius: 12px; color: var(--ink); font-family: inherit; font-size: 13px; outline: none; font-weight: 600; }
+.search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--gray); font-size: 15px; pointer-events: none; }
+
+.skill-filter { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; margin-top: 16px; }
+.skill-chip { font-size: 12px; padding: 6px 14px; border-radius: 20px; border: 2px solid var(--ink); color: var(--ink); cursor: pointer; white-space: nowrap; transition: all 0.15s; background: #fff; font-family: inherit; font-weight: 700; }
+.skill-chip:hover { background: var(--yellow-light); }
+.skill-chip.active { background: var(--coral); border-color: var(--ink); color: #fff; }
+
+.main { display: grid; grid-template-columns: 210px 1fr; gap: 0; }
+.sidebar { border-right: 2px solid var(--ink); padding: 24px 18px; min-height: 600px; background: #fff; }
+.sb-sec { margin-bottom: 22px; }
+.sb-title { font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--gray); margin-bottom: 12px; font-weight: 800; }
+.sb-opts { display: flex; flex-direction: column; gap: 4px; }
+.sb-opt { padding: 7px 12px; border-radius: 10px; cursor: pointer; font-size: 13px; color: var(--gray); display: flex; justify-content: space-between; align-items: center; transition: all 0.15s; font-weight: 700; }
+.sb-opt:hover { background: var(--cream); color: var(--ink); }
+.sb-opt.active { background: var(--teal-light); color: var(--ink); }
+.sb-cnt { font-size: 11px; color: var(--gray); background: var(--cream); padding: 2px 7px; border-radius: 8px; font-weight: 700; }
+.sb-opt.active .sb-cnt { background: var(--teal); color: #fff; }
+.avail-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray); padding: 9px 12px; background: var(--cream); border-radius: 10px; margin-bottom: 8px; font-weight: 700; border: 1.5px solid var(--line); }
+.avail-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
+
+.grid-area { padding: 24px 28px; background: var(--cream); }
+.grid-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+.grid-count { font-size: 13px; color: var(--gray); font-weight: 700; }
+.grid-count strong { color: var(--ink); }
+.sort-row { display: flex; gap: 6px; }
+.sort-btn { font-size: 12px; padding: 6px 14px; border-radius: 10px; cursor: pointer; font-family: inherit; border: 2px solid var(--ink); background: #fff; color: var(--ink); font-weight: 700; }
+.sort-btn.active { background: var(--ink); color: #fff; }
+
+.devs { display: grid; grid-template-columns: repeat(2,1fr); gap: 16px; }
+.dev-card { border: 2px solid var(--ink); border-radius: 16px; padding: 20px; cursor: pointer; transition: all 0.15s; text-decoration: none; display: block; color: inherit; background: #fff; }
+.dev-card:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--ink); }
+.dev-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+.dev-left { display: flex; align-items: center; gap: 12px; }
+.av { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; flex-shrink: 0; color: #fff; border: 2px solid var(--ink); }
+.av-1 { background: var(--coral); } .av-2 { background: var(--teal); } .av-3 { background: var(--yellow); color: var(--ink); } .av-4 { background: #B79CED; }
+.dev-name { font-size: 15px; font-weight: 800; color: var(--ink); margin-bottom: 2px; }
+.dev-meta { font-size: 12px; color: var(--gray); font-weight: 600; }
+.dev-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 4px 10px; border-radius: 8px; background: var(--yellow); color: var(--ink); font-weight: 800; border: 1.5px solid var(--ink); }
+.dev-skills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.skill { font-size: 11px; padding: 4px 10px; border-radius: 8px; background: var(--cream); color: var(--ink); border: 1.5px solid var(--line); font-weight: 700; }
+.dev-stats { display: flex; gap: 0; border-top: 2px dashed var(--line); padding-top: 14px; }
+.dev-stat { flex: 1; text-align: center; }
+.dev-stat-v { font-size: 15px; font-weight: 800; color: var(--ink); }
+.dev-stat-l { font-size: 11px; color: var(--gray); margin-top: 2px; font-weight: 600; }
+.stars { color: #F5A623; }
+.avail-indicator { width: 9px; height: 9px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
+.avail-indicator.busy { background: var(--yellow); }
+
+@media (max-width: 900px) {
+  .main { grid-template-columns: 1fr; }
+  .sidebar { border-right: none; border-bottom: 2px solid var(--ink); }
+  .devs { grid-template-columns: 1fr; }
+  .page-hdr-inner { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .search-wrap { max-width: 100%; }
+  .page-hdr { padding: 20px; }
+  .grid-area { padding: 20px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo"><div class="logo-mark">码</div>码上好</a>
+  <ul class="nav-links">
+    <li><a href="index.html">首页</a></li>
+    <li><a href="demand.html">需求广场</a></li>
+    <li><a href="developers.html" class="active">开发者</a></li>
+    <li><a href="join.html">商家入驻</a></li>
+  </ul>
+  <div class="nav-btns">
+    <a href="#" class="btn btn-ghost">登录</a>
+    <a href="post-demand.html" class="btn btn-primary">发布需求</a>
+  </div>
+</nav>
+
+<div class="page-hdr">
+  <div class="page-hdr-inner">
+    <div>
+      <div class="page-title">AI开发者 👩‍💻</div>
+      <div class="page-sub">认证AI开发者 · 快速交付 · 资金托管保障</div>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" type="text" placeholder="搜索技能、工具或方向..." />
+    </div>
+  </div>
+  <div class="skill-filter">
+    <button class="skill-chip active">全部</button>
+    <button class="skill-chip">微信小程序</button>
+    <button class="skill-chip">Web全栈</button>
+    <button class="skill-chip">AI自动化</button>
+    <button class="skill-chip">数据看板</button>
+    <button class="skill-chip">H5落地页</button>
+    <button class="skill-chip">Cursor</button>
+    <button class="skill-chip">Claude Code</button>
+    <button class="skill-chip">v0.dev</button>
+    <button class="skill-chip">n8n</button>
+  </div>
+</div>
+
+<div class="main">
+  <aside class="sidebar">
+    <div class="sb-sec">
+      <div class="sb-title">在线状态</div>
+      <div class="avail-badge"><div class="avail-dot"></div>可接单 (86人)</div>
+      <div class="avail-badge"><div class="avail-dot" style="background:var(--yellow)"></div>忙碌中 (42人)</div>
+    </div>
+    <div class="sb-sec">
+      <div class="sb-title">擅长方向</div>
+      <div class="sb-opts">
+        <div class="sb-opt active">全部 <span class="sb-cnt">128</span></div>
+        <div class="sb-opt">小程序开发 <span class="sb-cnt">43</span></div>
+        <div class="sb-opt">Web前端 <span class="sb-cnt">38</span></div>
+        <div class="sb-opt">AI自动化 <span class="sb-cnt">29</span></div>
+        <div class="sb-opt">后端/API <span class="sb-cnt">25</span></div>
+        <div class="sb-opt">数据工程 <span class="sb-cnt">18</span></div>
+      </div>
+    </div>
+    <div class="sb-sec">
+      <div class="sb-title">起步价</div>
+      <div class="sb-opts">
+        <div class="sb-opt">¥500 以下</div>
+        <div class="sb-opt">¥500–1,000</div>
+        <div class="sb-opt">¥1,000–3,000</div>
+        <div class="sb-opt">¥3,000 以上</div>
+      </div>
+    </div>
+    <div class="sb-sec">
+      <div class="sb-title">评分</div>
+      <div class="sb-opts">
+        <div class="sb-opt">4.9+</div>
+        <div class="sb-opt">4.5+</div>
+        <div class="sb-opt">4.0+</div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="grid-area">
+    <div class="grid-top">
+      <div class="grid-count">共 <strong>128</strong> 位认证开发者</div>
+      <div class="sort-row">
+        <button class="sort-btn active">综合推荐</button>
+        <button class="sort-btn">评分最高</button>
+        <button class="sort-btn">完成单多</button>
+        <button class="sort-btn">价格最低</button>
+      </div>
+    </div>
+
+    <div class="devs">
+      <a href="developer.html" class="dev-card">
+        <div class="dev-top">
+          <div class="dev-left">
+            <div class="av av-1">张明</div>
+            <div>
+              <div class="dev-name">张明 <span style="font-size:11px;color:var(--gray)">· 上海</span></div>
+              <div class="dev-meta">全栈AI开发</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+            <div class="dev-badge">🏆 Top开发者</div>
+            <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--gray);font-weight:700"><div class="avail-indicator"></div>可接单</div>
+          </div>
+        </div>
+        <div class="dev-skills">
+          <span class="skill">微信小程序</span><span class="skill">Vue.js</span><span class="skill">Claude API</span><span class="skill">Cursor</span><span class="skill">Node.js</span>
+        </div>
+        <div class="dev-stats">
+          <div class="dev-stat"><div class="dev-stat-v">142</div><div class="dev-stat-l">已完成</div></div>
+          <div class="dev-stat"><div class="dev-stat-v stars">★ 4.9</div><div class="dev-stat-l">评分</div></div>
+          <div class="dev-stat"><div class="dev-stat-v" style="color:var(--coral)">¥800起</div><div class="dev-stat-l">起步价</div></div>
+        </div>
+      </a>
+
+      <a href="developer.html" class="dev-card">
+        <div class="dev-top">
+          <div class="dev-left">
+            <div class="av av-2">林云</div>
+            <div>
+              <div class="dev-name">林云 <span style="font-size:11px;color:var(--gray)">· 深圳</span></div>
+              <div class="dev-meta">AI自动化专家</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+            <div class="dev-badge">✓ 认证开发者</div>
+            <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--gray);font-weight:700"><div class="avail-indicator"></div>可接单</div>
+          </div>
+        </div>
+        <div class="dev-skills">
+          <span class="skill">企业系统</span><span class="skill">数据看板</span><span class="skill">API对接</span><span class="skill">n8n</span><span class="skill">Python</span>
+        </div>
+        <div class="dev-stats">
+          <div class="dev-stat"><div class="dev-stat-v">89</div><div class="dev-stat-l">已完成</div></div>
+          <div class="dev-stat"><div class="dev-stat-v stars">★ 4.8</div><div class="dev-stat-l">评分</div></div>
+          <div class="dev-stat"><div class="dev-stat-v" style="color:var(--coral)">¥1,200起</div><div class="dev-stat-l">起步价</div></div>
+        </div>
+      </a>
+
+      <a href="developer.html" class="dev-card">
+        <div class="dev-top">
+          <div class="dev-left">
+            <div class="av av-3">王佳</div>
+            <div>
+              <div class="dev-name">王佳 <span style="font-size:11px;color:var(--gray)">· 北京</span></div>
+              <div class="dev-meta">前端AI开发</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+            <div class="dev-badge">✓ 认证开发者</div>
+            <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--gray);font-weight:700"><div class="avail-indicator busy"></div>忙碌中</div>
+          </div>
+        </div>
+        <div class="dev-skills">
+          <span class="skill">H5落地页</span><span class="skill">React</span><span class="skill">v0.dev</span><span class="skill">Bolt</span>
+        </div>
+        <div class="dev-stats">
+          <div class="dev-stat"><div class="dev-stat-v">67</div><div class="dev-stat-l">已完成</div></div>
+          <div class="dev-stat"><div class="dev-stat-v stars">★ 4.7</div><div class="dev-stat-l">评分</div></div>
+          <div class="dev-stat"><div class="dev-stat-v" style="color:var(--coral)">¥500起</div><div class="dev-stat-l">起步价</div></div>
+        </div>
+      </a>
+
+      <a href="developer.html" class="dev-card">
+        <div class="dev-top">
+          <div class="dev-left">
+            <div class="av av-4">陈刚</div>
+            <div>
+              <div class="dev-name">陈刚 <span style="font-size:11px;color:var(--gray)">· 杭州</span></div>
+              <div class="dev-meta">小程序专精</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+            <div class="dev-badge">✓ 认证开发者</div>
+            <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--gray);font-weight:700"><div class="avail-indicator"></div>可接单</div>
+          </div>
+        </div>
+        <div class="dev-skills">
+          <span class="skill">微信小程序</span><span class="skill">uni-app</span><span class="skill">Claude Code</span><span class="skill">微信支付</span>
+        </div>
+        <div class="dev-stats">
+          <div class="dev-stat"><div class="dev-stat-v">53</div><div class="dev-stat-l">已完成</div></div>
+          <div class="dev-stat"><div class="dev-stat-v stars">★ 4.8</div><div class="dev-stat-l">评分</div></div>
+          <div class="dev-stat"><div class="dev-stat-v" style="color:var(--coral)">¥600起</div><div class="dev-stat-l">起步价</div></div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.skill-chip').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.skill-chip').forEach(e => e.classList.remove('active'));
+    el.classList.add('active');
+  });
+});
+document.querySelectorAll('.sort-btn').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.sort-btn').forEach(e => e.classList.remove('active'));
+    el.classList.add('active');
+  });
+});
+document.querySelectorAll('.sidebar .sb-opts').forEach(group => {
+  group.querySelectorAll('.sb-opt').forEach(el => {
+    el.addEventListener('click', () => {
+      group.querySelectorAll('.sb-opt').forEach(e => e.classList.remove('active'));
+      el.classList.add('active');
+    });
+  });
+});
+</script>
+
+</body>
+</html>
