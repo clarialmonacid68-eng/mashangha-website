@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>开发者入驻 — 码上好</title>
+<link rel="stylesheet" href="styles.css" />
+<style>
+.hero { padding: 64px 40px 56px; border-bottom: 2px solid var(--ink); text-align: center; background: linear-gradient(180deg, var(--yellow-light) 0%, var(--cream) 100%); }
+.eyebrow { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; background: #fff; border: 2px solid var(--ink); border-radius: 20px; padding: 6px 16px; margin-bottom: 22px; font-weight: 700; }
+.hero h1 { font-size: 42px; font-weight: 800; line-height: 1.25; letter-spacing: -0.02em; color: var(--ink); max-width: 600px; margin: 0 auto 18px; }
+.hero h1 .hl { background: var(--coral); color: #fff; padding: 0 10px; border-radius: 8px; transform: rotate(-1deg); display: inline-block; }
+.hero-sub { font-size: 16px; color: var(--gray); max-width: 460px; margin: 0 auto 32px; line-height: 1.7; font-weight: 500; }
+
+.perks-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; max-width: 960px; margin: 0 auto; }
+.perk { padding: 24px 20px; text-align: left; border: 2px solid var(--ink); border-radius: 16px; background: #fff; }
+.perk:nth-child(1) { background: var(--coral-light); }
+.perk:nth-child(2) { background: var(--yellow-light); }
+.perk:nth-child(3) { background: var(--teal-light); }
+.perk-icon { font-size: 24px; margin-bottom: 10px; }
+.perk-title { font-size: 14px; font-weight: 800; color: var(--ink); margin-bottom: 5px; }
+.perk-desc { font-size: 12px; color: var(--gray); line-height: 1.6; font-weight: 600; }
+
+.main-layout { max-width: 1020px; margin: 0 auto; padding: 56px 40px; display: grid; grid-template-columns: 1fr 390px; gap: 40px; }
+
+.info-side .sec-eyebrow { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--coral); margin-bottom: 8px; font-weight: 800; }
+.info-side .sec-title { font-size: 26px; font-weight: 800; color: var(--ink); margin-bottom: 24px; letter-spacing: -0.01em; }
+
+.process-list { display: flex; flex-direction: column; gap: 14px; }
+.process-item { display: flex; gap: 16px; padding: 18px; border: 2px solid var(--ink); border-radius: 14px; background: #fff; }
+.process-num { width: 36px; height: 36px; border-radius: 50%; background: var(--yellow); color: var(--ink); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; flex-shrink: 0; border: 2px solid var(--ink); }
+.process-title { font-size: 14px; font-weight: 800; color: var(--ink); margin-bottom: 4px; }
+.process-desc { font-size: 13px; color: var(--gray); line-height: 1.65; font-weight: 500; }
+
+.req-box { background: var(--teal-light); border: 2px solid var(--ink); border-radius: 16px; padding: 22px; margin-top: 28px; }
+.req-title { font-size: 14px; font-weight: 800; color: var(--ink); margin-bottom: 14px; }
+.req-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.req-list li { font-size: 13px; color: var(--ink); display: flex; align-items: flex-start; gap: 8px; font-weight: 600; }
+.req-check { color: #1A9E8E; flex-shrink: 0; margin-top: 1px; font-weight: 800; }
+
+.commission-box { background: var(--ink); border-radius: 16px; padding: 22px; margin-top: 16px; color: #fff; border: 2px solid var(--ink); }
+.commission-title { font-size: 14px; font-weight: 800; margin-bottom: 14px; color: rgba(255,255,255,0.8); }
+.commission-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 13px; font-weight: 600; }
+.commission-row:last-child { border-bottom: none; }
+.commission-val { font-weight: 800; }
+.commission-val.blue { color: var(--yellow); }
+
+/* FORM */
+.form-card { background: #fff; border: 2px solid var(--ink); border-radius: 18px; padding: 30px; position: sticky; top: 90px; }
+.form-title { font-size: 20px; font-weight: 800; color: var(--ink); margin-bottom: 4px; }
+.form-sub { font-size: 13px; color: var(--gray); margin-bottom: 24px; font-weight: 600; }
+.form-group { margin-bottom: 18px; }
+.form-label { font-size: 13px; color: var(--ink); margin-bottom: 6px; font-weight: 800; display: block; }
+.form-input { width: 100%; padding: 12px 14px; background: #fff; border: 2px solid var(--line); border-radius: 10px; color: var(--ink); font-family: inherit; font-size: 14px; outline: none; transition: border-color 0.2s; font-weight: 600; }
+.form-input:focus { border-color: var(--coral); }
+.form-select { width: 100%; padding: 12px 14px; background: #fff; border: 2px solid var(--line); border-radius: 10px; color: var(--ink); font-family: inherit; font-size: 14px; outline: none; cursor: pointer; font-weight: 600; }
+.tool-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.tool-opt { padding: 10px 6px; border: 2px solid var(--line); border-radius: 10px; text-align: center; font-size: 12px; cursor: pointer; transition: all 0.15s; color: var(--gray); background: #fff; font-weight: 700; }
+.tool-opt:hover { border-color: var(--coral); }
+.tool-opt.sel { border-color: var(--ink); background: var(--yellow); color: var(--ink); }
+.form-footnote { font-size: 12px; color: var(--gray); text-align: center; margin-top: 12px; font-weight: 600; }
+
+@media (max-width: 900px) {
+  .perks-row { grid-template-columns: 1fr; }
+  .main-layout { grid-template-columns: 1fr; padding: 32px 20px; }
+  .form-card { position: static; }
+  .hero { padding: 40px 20px; }
+  .hero h1 { font-size: 28px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo"><div class="logo-mark">码</div>码上好</a>
+  <ul class="nav-links">
+    <li><a href="index.html">首页</a></li>
+    <li><a href="demand.html">需求广场</a></li>
+    <li><a href="developers.html">开发者</a></li>
+    <li><a href="join.html" class="active">商家入驻</a></li>
+  </ul>
+  <div class="nav-btns">
+    <a href="#" class="btn btn-ghost">登录</a>
+    <a href="post-demand.html" class="btn btn-primary">发布需求</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow">🙌 开发者入驻</div>
+  <h1>用你的AI能力<br/><span class="hl">赚到稳定收入</span></h1>
+  <p class="hero-sub">会用Cursor、Claude Code、v0？把你的技能变成收入。平台匹配客户，你专注做项目。</p>
+
+  <div class="perks-row">
+    <div class="perk">
+      <div class="perk-icon">🚀</div>
+      <div class="perk-title">0门槛入驻</div>
+      <div class="perk-desc">无保证金，无年费，填表即可申请，审核通过当天接单</div>
+    </div>
+    <div class="perk">
+      <div class="perk-icon">💰</div>
+      <div class="perk-title">佣金低至10%</div>
+      <div class="perk-desc">行业最低费率，收入大头归你，无任何隐藏费用</div>
+    </div>
+    <div class="perk">
+      <div class="perk-icon">🔒</div>
+      <div class="perk-title">资金托管结算</div>
+      <div class="perk-desc">客户先付款再开工，平台托管，杜绝恶意不付款</div>
+    </div>
+    <div class="perk">
+      <div class="perk-icon">📈</div>
+      <div class="perk-title">流量扶持</div>
+      <div class="perk-desc">优质开发者获首页推荐位，平台主动推广曝光</div>
+    </div>
+  </div>
+</section>
+
+<div class="main-layout">
+  <div class="info-side">
+    <div class="sec-eyebrow">入驻流程</div>
+    <div class="sec-title">3步开始接单 🎉</div>
+
+    <div class="process-list">
+      <div class="process-item">
+        <div class="process-num">1</div>
+        <div>
+          <div class="process-title">填写入驻申请</div>
+          <div class="process-desc">填写姓名、联系方式、擅长方向和常用AI开发工具，5分钟完成</div>
+        </div>
+      </div>
+      <div class="process-item">
+        <div class="process-num">2</div>
+        <div>
+          <div class="process-title">平台审核（1工作日内）</div>
+          <div class="process-desc">平台人工审核你的资料和作品集，最快当天通过</div>
+        </div>
+      </div>
+      <div class="process-item">
+        <div class="process-num">3</div>
+        <div>
+          <div class="process-title">完善主页，开始接单</div>
+          <div class="process-desc">上传作品集、设置起步价，即可在需求广场浏览需求并报价</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="req-box">
+      <div class="req-title">入驻要求 ✅</div>
+      <ul class="req-list">
+        <li><span class="req-check">✓</span>能够熟练使用至少一种AI开发工具（Cursor / Claude Code / v0 / Bolt / Windsurf 等）</li>
+        <li><span class="req-check">✓</span>具备独立完成一个完整程序（小程序/网站/系统）的能力</li>
+        <li><span class="req-check">✓</span>能提供1-2个过往作品案例（无作品也可参与新人试单计划）</li>
+        <li><span class="req-check">✓</span>完成实名认证（提现前必须完成）</li>
+      </ul>
+    </div>
+
+    <div class="commission-box">
+      <div class="commission-title">费用说明</div>
+      <div class="commission-row"><span>入驻费用</span><span class="commission-val blue">¥0 永久免费</span></div>
+      <div class="commission-row"><span>平台佣金</span><span class="commission-val">10–15%（验收后扣除）</span></div>
+      <div class="commission-row"><span>提现到账</span><span class="commission-val">T+1 工作日</span></div>
+      <div class="commission-row"><span>新人福利</span><span class="commission-val blue">前10单佣金减半</span></div>
+    </div>
+  </div>
+
+  <aside>
+    <div class="form-card">
+      <div class="form-title">申请入驻 ✍️</div>
+      <div class="form-sub">填写以下信息，1个工作日内审核完成</div>
+
+      <div class="form-group">
+        <label class="form-label">你的姓名</label>
+        <input class="form-input" type="text" placeholder="输入你的姓名" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">联系方式（微信或手机）</label>
+        <input class="form-input" type="text" placeholder="方便我们联系你" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">所在城市</label>
+        <input class="form-input" type="text" placeholder="如：上海" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">主要擅长方向</label>
+        <select class="form-select">
+          <option>请选择</option>
+          <option>微信小程序开发</option>
+          <option>Web前端 / H5</option>
+          <option>企业管理系统</option>
+          <option>AI自动化 / 工作流</option>
+          <option>数据看板 / BI</option>
+          <option>其他</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">常用AI开发工具（可多选）</label>
+        <div class="tool-grid">
+          <div class="tool-opt sel">Cursor</div>
+          <div class="tool-opt sel">Claude Code</div>
+          <div class="tool-opt">v0.dev</div>
+          <div class="tool-opt">Bolt</div>
+          <div class="tool-opt">Windsurf</div>
+          <div class="tool-opt">其他</div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:8px">
+        <label class="form-label">起步价（元/项目）</label>
+        <input class="form-input" type="text" placeholder="如：800" />
+      </div>
+
+      <button class="btn btn-primary btn-block btn-lg" onclick="alert('申请已提交！我们将在1个工作日内联系你（演示）')">提交入驻申请 →</button>
+      <div class="form-footnote">平均1个工作日内审核，通过后立即接单</div>
+    </div>
+  </aside>
+</div>
+
+<footer class="footer">
+  <div class="footer-logo">码上好</div>
+  <div class="footer-links">
+    <span class="footer-link">关于我们</span>
+    <span class="footer-link">服务协议</span>
+    <span class="footer-link">隐私政策</span>
+    <span class="footer-link">联系我们</span>
+  </div>
+  <div class="footer-copy">© 2025 码上好 AI开发平台</div>
+</footer>
+
+<script>
+document.querySelectorAll('.tool-opt').forEach(el => {
+  el.addEventListener('click', () => el.classList.toggle('sel'));
+});
+</script>
+
+</body>
+</html>

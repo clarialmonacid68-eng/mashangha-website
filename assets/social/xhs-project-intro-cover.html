@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>码上好小红书封面</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 1080px;
+      height: 1440px;
+      overflow: hidden;
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: #202124;
+      background: #fff8e8;
+    }
+    body {
+      position: relative;
+      padding: 88px 78px;
+      background:
+        radial-gradient(circle at 12% 12%, rgba(255, 209, 73, .78) 0 118px, transparent 120px),
+        radial-gradient(circle at 92% 82%, rgba(80, 199, 190, .34) 0 190px, transparent 192px),
+        linear-gradient(145deg, #fff7dc 0%, #fffdf8 55%, #eefcf9 100%);
+    }
+    .shape {
+      position: absolute;
+      border: 4px solid #202124;
+      border-radius: 26px;
+      background: #ff775f;
+      transform: rotate(11deg);
+    }
+    .shape.one { width: 124px; height: 124px; right: 76px; top: 116px; }
+    .shape.two {
+      width: 72px;
+      height: 72px;
+      left: 46px;
+      bottom: 202px;
+      border-radius: 50%;
+      background: #50c7be;
+    }
+    .brand {
+      display: block;
+      width: 320px;
+      height: 80px;
+    }
+    .status {
+      display: inline-block;
+      margin-top: 74px;
+      padding: 13px 24px;
+      border: 3px solid #202124;
+      border-radius: 999px;
+      background: white;
+      font-size: 25px;
+      font-weight: 700;
+      box-shadow: 5px 5px 0 #202124;
+    }
+    h1 {
+      max-width: 850px;
+      margin: 46px 0 34px;
+      font-size: 104px;
+      line-height: 1.12;
+      letter-spacing: -5px;
+    }
+    h1 span {
+      position: relative;
+      z-index: 1;
+      white-space: nowrap;
+    }
+    h1 span::after {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      left: -8px;
+      right: -8px;
+      bottom: 4px;
+      height: 34px;
+      border-radius: 8px;
+      background: #ffd149;
+      transform: rotate(-1deg);
+    }
+    .subtitle {
+      max-width: 810px;
+      margin: 0;
+      color: #4a4e55;
+      font-size: 38px;
+      font-weight: 600;
+      line-height: 1.65;
+    }
+    .cards {
+      display: flex;
+      gap: 28px;
+      margin-top: 80px;
+    }
+    .card {
+      flex: 1;
+      min-height: 250px;
+      padding: 34px;
+      border: 4px solid #202124;
+      border-radius: 30px;
+      background: white;
+      box-shadow: 10px 10px 0 #202124;
+    }
+    .card:last-child { background: #dff8f4; }
+    .icon {
+      display: grid;
+      width: 68px;
+      height: 68px;
+      place-items: center;
+      border: 3px solid #202124;
+      border-radius: 18px;
+      background: #fff;
+    }
+    .icon.dark { background: #0f172a; }
+    .icon img { width: 50px; height: 50px; }
+    .card h2 {
+      margin: 20px 0 12px;
+      font-size: 35px;
+    }
+    .card p {
+      margin: 0;
+      color: #565b63;
+      font-size: 25px;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+    .footer {
+      position: absolute;
+      right: 78px;
+      bottom: 65px;
+      left: 78px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 25px;
+      font-weight: 700;
+    }
+    .footer img { width: 272px; height: auto; }
+  </style>
+</head>
+<body>
+  <div class="shape one"></div>
+  <div class="shape two"></div>
+
+  <img class="brand" src="../../商标和头像/logo-horizontal.svg" alt="码上好">
+
+  <div class="status">AI 开发服务平台 · 试运营中</div>
+
+  <h1>找 AI 开发者<br>做你的<span>专属程序</span></h1>
+  <p class="subtitle">小程序、管理系统、AI 客服、数据看板、自动化工具，都可以先来聊聊。</p>
+
+  <div class="cards">
+    <section class="card">
+      <div class="icon">
+        <img src="../../商标和头像/icon-48.svg" alt="">
+      </div>
+      <h2>有想法</h2>
+      <p>帮你梳理需求<br>人工匹配开发者</p>
+    </section>
+    <section class="card">
+      <div class="icon dark">
+        <img src="../../商标和头像/icon-dark-bg-96.svg" alt="">
+      </div>
+      <h2>会开发</h2>
+      <p>首批 AI 开发者<br>正在招募中</p>
+    </section>
+  </div>
+
+  <div class="footer">
+    <span>从 0 开始，公开记录真实进展</span>
+    <img src="../../商标和头像/logo-horizontal-with-domain.svg" alt="码上好 mshcode.com">
+  </div>
+</body>
+</html>
