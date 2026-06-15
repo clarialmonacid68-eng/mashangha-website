@@ -175,6 +175,146 @@ a:focus-visible {
   box-shadow: var(--shadow);
 }
 
+.auth-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 40px 20px;
+  background:
+    radial-gradient(circle at top left, var(--brand-soft), transparent 34%),
+    radial-gradient(circle at bottom right, var(--teal-soft), transparent 32%),
+    var(--background);
+}
+
+.auth-card {
+  width: min(100%, 480px);
+  padding: 34px;
+}
+
+.auth-brand {
+  margin-bottom: 34px;
+}
+
+.auth-card h1,
+.workspace-page h1 {
+  margin: 8px 0 12px;
+  font-size: clamp(28px, 5vw, 40px);
+  letter-spacing: -0.04em;
+}
+
+.auth-intro,
+.auth-terms,
+.auth-message,
+.auth-back-link {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin: 28px 0 22px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--surface-muted);
+}
+
+.auth-tabs button {
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 10px;
+}
+
+.auth-tabs button.is-active {
+  background: var(--surface);
+  box-shadow: 0 4px 14px rgb(23 32 51 / 8%);
+  color: var(--foreground);
+}
+
+.auth-form {
+  display: grid;
+  gap: 12px;
+}
+
+.auth-form label {
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.auth-form input {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--foreground);
+  font: inherit;
+  padding: 11px 13px;
+}
+
+.auth-form input:focus {
+  border-color: var(--teal);
+  outline: 3px solid rgb(31 169 149 / 15%);
+}
+
+.auth-message {
+  margin: 18px 0 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--yellow-soft);
+  font-size: 14px;
+}
+
+.auth-terms,
+.auth-back-link {
+  display: block;
+  margin: 20px 0 0;
+  font-size: 13px;
+  text-align: center;
+}
+
+.workspace-page {
+  display: grid;
+  gap: 28px;
+  max-width: 760px;
+}
+
+.settings-card {
+  padding: 28px;
+}
+
+.role-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.account-id {
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.contact-binding {
+  display: grid;
+  gap: 24px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.compact-form {
+  margin-top: 10px;
+}
+
 .hero {
   display: grid;
   width: min(1180px, calc(100% - 40px));

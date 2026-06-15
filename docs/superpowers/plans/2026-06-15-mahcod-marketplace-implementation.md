@@ -405,7 +405,7 @@ git commit -m "feat: add marketplace schema and row security"
 - Test: `tests/unit/auth/guards.test.ts`
 - Test: `tests/e2e/auth.spec.ts`
 
-- [ ] **Step 1: 写权限守卫测试**
+- [x] **Step 1: 写权限守卫测试**
 
 ```ts
 expect(canAccessWorkspace(["customer"], "customer")).toBe(true);
@@ -413,7 +413,7 @@ expect(canAccessWorkspace(["customer"], "developer")).toBe(false);
 expect(canAccessWorkspace(["customer", "developer"], "developer")).toBe(true);
 ```
 
-- [ ] **Step 2: 实现登录流程**
+- [x] **Step 2: 实现登录流程**
 
 登录页提供两个标签：
 
@@ -422,11 +422,11 @@ expect(canAccessWorkspace(["customer", "developer"], "developer")).toBe(true);
 
 首次登录事务中创建 `profiles` 和默认 `customer` 角色。申请开发者认证时添加 `developer` 角色，但认证通过前不可报价。
 
-- [ ] **Step 3: 实现角色切换**
+- [x] **Step 3: 实现角色切换**
 
 工作台切换只改变界面上下文，不创建第二账号。当前角色保存在安全 cookie；服务端每次读取时必须验证用户确实拥有该角色。
 
-- [ ] **Step 4: 验证**
+- [x] **Step 4: 验证**
 
 Run:
 
@@ -437,7 +437,7 @@ pnpm playwright test tests/e2e/auth.spec.ts
 
 Expected: 手机和邮箱登录均进入同一账号；未认证开发者无法进入报价操作。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add app lib/auth tests

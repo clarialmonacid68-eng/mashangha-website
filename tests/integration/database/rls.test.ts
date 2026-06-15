@@ -127,4 +127,21 @@ describeWithDatabase("marketplace row level security", () => {
 
     expect(error).not.toBeNull();
   });
+
+  it("lets a customer apply for a draft developer role", async () => {
+    const { error } = await customerB.rpc("apply_for_developer");
+    expect(error).toBeNull();
+
+    const [{ data: roles }, { data: profile }] = await Promise.all([
+      customerB.from("user_roles").select("role"),
+      customerB
+        .from("developer_profiles")
+        .select("review_status")
+        .eq("user_id", customerBUserId)
+        .single(),
+    ]);
+
+    expect(roles?.map(({ role }) => role)).toContain("developer");
+    expect(profile?.review_status).toBe("draft");
+  });
 });

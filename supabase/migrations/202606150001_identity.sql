@@ -89,6 +89,29 @@ as $$
   );
 $$;
 
+create or replace function public.apply_for_developer()
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  current_user_id uuid := auth.uid();
+begin
+  if current_user_id is null then
+    raise exception 'Authentication required';
+  end if;
+
+  insert into public.developer_profiles (user_id, review_status)
+  values (current_user_id, 'draft')
+  on conflict (user_id) do nothing;
+
+  insert into public.user_roles (user_id, role)
+  values (current_user_id, 'developer')
+  on conflict (user_id, role) do nothing;
+end;
+$$;
+
 alter table public.profiles enable row level security;
 alter table public.user_roles enable row level security;
 alter table public.developer_profiles enable row level security;
@@ -130,3 +153,5 @@ grant select, update on public.profiles to authenticated;
 grant select on public.user_roles to authenticated;
 grant select on public.developer_profiles to anon, authenticated;
 grant insert, update on public.developer_profiles to authenticated;
+revoke execute on function public.apply_for_developer() from public, anon;
+grant execute on function public.apply_for_developer() to authenticated;

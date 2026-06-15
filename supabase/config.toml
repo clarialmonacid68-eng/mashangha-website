@@ -160,7 +160,11 @@ site_url = "http://127.0.0.1:3000"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://127.0.0.1:3000"]
+additional_redirect_urls = [
+  "http://127.0.0.1:3000",
+  "http://localhost:3000",
+  "https://127.0.0.1:3000",
+]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -256,7 +260,7 @@ otp_expiry = 3600
 
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.
-enable_signup = false
+enable_signup = true
 # If enabled, users need to confirm their phone number before signing in.
 enable_confirmations = false
 # Template for sending OTP to users
@@ -265,8 +269,8 @@ template = "Your code is {{ `{{ .Code }}` }}"
 max_frequency = "5s"
 
 # Use pre-defined map of phone number to OTP for testing.
-# [auth.sms.test_otp]
-# 4152127777 = "123456"
+[auth.sms.test_otp]
+"+8613800138000" = "123456"
 
 # Configure logged in session timeouts.
 # [auth.sessions]
@@ -287,11 +291,12 @@ max_frequency = "5s"
 
 # Configure one of the supported SMS providers: `twilio`, `twilio_verify`, `messagebird`, `textlocal`, `vonage`.
 [auth.sms.twilio]
-enabled = false
-account_sid = ""
-message_service_sid = ""
+# Local-only placeholder: fixed test OTPs bypass outbound Twilio requests.
+enabled = true
+account_sid = "AC_LOCAL_TEST"
+message_service_sid = "MG_LOCAL_TEST"
 # DO NOT commit your Twilio auth token to git. Use environment variable substitution instead:
-auth_token = "env(SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN)"
+auth_token = "local-test-token"
 
 # Multi-factor-authentication is available to Supabase Pro plan.
 [auth.mfa]

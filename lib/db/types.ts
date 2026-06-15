@@ -893,6 +893,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_for_developer: { Args: never; Returns: undefined }
       has_role: {
         Args: { required_role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean

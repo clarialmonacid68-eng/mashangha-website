@@ -11,6 +11,7 @@ const roleConfig = {
       { href: "/workspace/customer/demands", label: "我的需求" },
       { href: "/workspace/customer/quotes", label: "收到的报价" },
       { href: "/workspace/orders", label: "我的订单" },
+      { href: "/workspace/settings", label: "账号设置" },
     ],
   },
   developer: {
@@ -20,6 +21,7 @@ const roleConfig = {
       { href: "/workspace/developer/demands", label: "可报价需求" },
       { href: "/workspace/developer/quotes", label: "我的报价" },
       { href: "/workspace/orders", label: "履约订单" },
+      { href: "/workspace/settings", label: "账号设置" },
     ],
   },
 } satisfies Record<
