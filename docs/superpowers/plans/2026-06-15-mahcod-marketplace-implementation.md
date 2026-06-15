@@ -254,7 +254,7 @@ Expected: 所有命令成功，生成首次提交。
 - Create: `components/admin/admin-shell.tsx`
 - Test: `tests/unit/components/status-badge.test.tsx`
 
-- [ ] **Step 1: 写状态徽标失败测试**
+- [x] **Step 1: 写状态徽标失败测试**
 
 ```tsx
 import { render, screen } from "@testing-library/react";
@@ -266,12 +266,12 @@ it("renders the Chinese label for an order status", () => {
 });
 ```
 
-- [ ] **Step 2: 运行测试确认失败**
+- [x] **Step 2: 运行测试确认失败**
 
 Run: `pnpm vitest run tests/unit/components/status-badge.test.tsx`  
 Expected: FAIL，模块尚不存在。
 
-- [ ] **Step 3: 实现品牌变量和基础组件**
+- [x] **Step 3: 实现品牌变量和基础组件**
 
 `StatusBadge` 使用穷尽映射，不允许未知状态静默显示：
 
@@ -303,7 +303,7 @@ export function StatusBadge({ status }: { status: keyof typeof labels }) {
 - 移动端导航可折叠，工作台侧栏在移动端变为顶部入口。
 - 所有交互元素必须具备键盘焦点样式。
 
-- [ ] **Step 4: 运行组件测试和视觉烟雾测试**
+- [x] **Step 4: 运行组件测试和视觉烟雾测试**
 
 Run:
 
@@ -314,7 +314,7 @@ pnpm dev
 
 Expected: 单元测试通过；三类布局在桌面和手机宽度无横向滚动。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add app components tests
