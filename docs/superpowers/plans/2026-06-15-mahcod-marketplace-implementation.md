@@ -331,7 +331,7 @@ git commit -m "feat: add marketplace design system and layouts"
 - Create: `lib/db/types.ts`
 - Test: `tests/integration/database/rls.test.ts`
 
-- [ ] **Step 1: 写越权访问集成测试**
+- [x] **Step 1: 写越权访问集成测试**
 
 测试必须验证：
 
@@ -342,7 +342,7 @@ it("prevents a customer from reading another customer's private order", async ()
 });
 ```
 
-- [ ] **Step 2: 创建枚举、表和约束**
+- [x] **Step 2: 创建枚举、表和约束**
 
 迁移必须定义：
 
@@ -360,7 +360,7 @@ create type order_status as enum (
 
 所有金额字段使用 `bigint` 分；关键表必须含 `created_at`、`updated_at`；订单固化 `amount_cents` 与 `commission_bps`，并包含用于乐观并发的 `version bigint not null default 0`。
 
-- [ ] **Step 3: 实施 RLS**
+- [x] **Step 3: 实施 RLS**
 
 权限合同：
 
@@ -371,7 +371,7 @@ create type order_status as enum (
 - 只有服务端管理角色可以写支付、退款、分账和审计表。
 - 管理员权限由服务端检查，不仅依赖前端路由隐藏。
 
-- [ ] **Step 4: 应用迁移并生成类型**
+- [x] **Step 4: 应用迁移并生成类型**
 
 Run:
 
@@ -384,7 +384,7 @@ pnpm vitest run tests/integration/database/rls.test.ts
 
 Expected: 数据库重建成功，越权测试通过。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add supabase lib/db tests/integration/database
