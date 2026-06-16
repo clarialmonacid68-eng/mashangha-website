@@ -411,9 +411,9 @@ a:focus-visible {
   font-weight: 750;
 }
 
-.auth-form input {
+.auth-form input,
+.auth-form textarea {
   width: 100%;
-  min-height: 48px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface);
@@ -422,7 +422,17 @@ a:focus-visible {
   padding: 11px 13px;
 }
 
-.auth-form input:focus {
+.auth-form input {
+  min-height: 48px;
+}
+
+.auth-form textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.auth-form input:focus,
+.auth-form textarea:focus {
   border-color: var(--teal);
   outline: 3px solid rgb(31 169 149 / 15%);
 }
@@ -451,6 +461,12 @@ a:focus-visible {
 
 .settings-card {
   padding: 28px;
+}
+
+.form-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .role-options {
@@ -940,6 +956,10 @@ a:focus-visible {
 }
 
 @media (max-width: 640px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
   .site-header-inner,
   .hero,
   .content-section {

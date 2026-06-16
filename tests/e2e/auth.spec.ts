@@ -1,12 +1,47 @@
 import { expect, test } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
 
+function createAdminClient() {
+  return createClient(
+    process.env.SUPABASE_URL ?? process.env.API_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } },
+  );
+}
+
 test("email and phone identifiers authenticate the same account", async ({
   page,
   request,
 }) => {
   const email = `e2e-${Date.now()}@example.com`;
   const phone = "+8613800138000";
+  const admin = createAdminClient();
+
+  const { data: existingUsers, error: listError } =
+    await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  expect(listError).toBeNull();
+
+  const staleUsers =
+    existingUsers?.users.filter(
+      (user) =>
+        user.phone === phone ||
+        user.phone === phone.replace("+", "") ||
+        user.email?.startsWith("e2e-"),
+    ) ?? [];
+  const staleUserIds = staleUsers.map((user) => user.id);
+
+  if (staleUserIds.length) {
+    const { error } = await admin
+      .from("demands")
+      .delete()
+      .in("customer_id", staleUserIds);
+    expect(error).toBeNull();
+  }
+
+  for (const user of staleUsers) {
+    const { error } = await admin.auth.admin.deleteUser(user.id);
+    expect(error).toBeNull();
+  }
 
   await page.goto("/login");
   await page.getByRole("tab", { name: "邮箱登录" }).click();
@@ -68,11 +103,6 @@ test("email and phone identifiers authenticate the same account", async ({
 
   const accountId = await page.getByTestId("account-id").textContent();
 
-  const admin = createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
   const { error: bindError } = await admin.auth.admin.updateUserById(
     accountId!,
     {
@@ -93,4 +123,16 @@ test("email and phone identifiers authenticate the same account", async ({
   await page.getByRole("button", { name: "完成登录" }).click();
   await expect(page).toHaveURL(/\/workspace\/settings$/);
   await expect(page.getByTestId("account-id")).toHaveText(accountId!);
+
+  await page.goto("/workspace/customer/demands/new");
+  await expect(page.getByRole("heading", { name: "发布开发需求" })).toBeVisible();
+  await page.getByLabel("需求标题").fill("企业官网接入 AI 客服");
+  await page
+    .getByLabel("需求描述")
+    .fill("希望在企业官网右下角接入 AI 客服，支持产品问答、线索收集和人工联系方式展示。");
+  await page.getByLabel("预算下限（元）").fill("3000");
+  await page.getByLabel("预算上限（元）").fill("8000");
+  await page.getByRole("button", { name: "保存需求草稿" }).click();
+  await expect(page).toHaveURL(/\/workspace\/customer\/demands\/new\?saved=1$/);
+  await expect(page.getByText("需求草稿已保存。")).toBeVisible();
 });
