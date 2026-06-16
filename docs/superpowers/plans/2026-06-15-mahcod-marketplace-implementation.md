@@ -858,26 +858,29 @@ git commit -m "feat: add marketplace operations console"
 ### Task 14: 第一阶段安全、可观测性与上线验收
 
 **Files:**
-- Create: `middleware.ts`
+- Create: `proxy.ts`（Next 16 推荐的 Proxy 入口，承载原 middleware 安全控制）
 - Create: `lib/security/rate-limit.ts`
 - Create: `lib/security/idempotency.ts`
 - Create: `lib/observability/logger.ts`
+- Create: `tests/unit/security/security-controls.test.ts`
+- Create: `tests/e2e/security.spec.ts`
 - Create: `tests/e2e/customer-flow.spec.ts`
 - Create: `tests/e2e/developer-flow.spec.ts`
 - Create: `tests/e2e/dispute-flow.spec.ts`
+- Modify: `lib/domain/disputes/service.ts`
 - Modify: `OPERATIONS.md`
 
-- [ ] **Step 1: 实施安全控制**
+- [x] **Step 1: 实施安全控制**
 
 对验证码、登录、报价、留言、上传、支付和仲裁接口限流；所有写操作校验 Origin/CSRF 策略；安全日志不得记录验证码、密钥或文件签名 URL。
 
-- [ ] **Step 2: 写三条完整 E2E 流程**
+- [x] **Step 2: 写三条完整 E2E 流程**
 
 1. 客户发布需求、管理员审核、开发者报价、客户选标并模拟付款。
 2. 开发者留言、上传文件、正式交付，客户验收并评价。
 3. 客户拒绝验收、申请仲裁、管理员裁决全额退款。
 
-- [ ] **Step 3: 做无障碍和响应式检查**
+- [x] **Step 3: 做无障碍和响应式检查**
 
 Run:
 
@@ -888,11 +891,11 @@ pnpm verify
 
 Expected: 所有测试通过；手机与桌面主流程无阻塞；构建成功。
 
-- [ ] **Step 4: 更新运营手册**
+- [x] **Step 4: 更新运营手册**
 
 `OPERATIONS.md` 写明每日审核、异常订单、投诉、退款、证据保全、数据删除和支付能力未上线时的宣传限制。
 
-- [ ] **Step 5: 提交第一阶段**
+- [x] **Step 5: 提交第一阶段**
 
 ```bash
 git add .
