@@ -568,7 +568,7 @@ git commit -m "feat: add demand publishing and marketplace"
 - Test: `tests/unit/orders/state-machine.test.ts`
 - Test: `tests/integration/quotes/select.test.ts`
 
-- [ ] **Step 1: 写状态机和并发选标测试**
+- [x] **Step 1: 写状态机和并发选标测试**
 
 ```ts
 expect(transition("pending_payment", "payment_succeeded")).toBe("in_progress");
@@ -577,7 +577,7 @@ expect(() => transition("completed", "deliver")).toThrow();
 
 集成测试必须并发选择两份报价，并断言只生成一个订单。
 
-- [ ] **Step 2: 定义完整状态转换矩阵**
+- [x] **Step 2: 定义完整状态转换矩阵**
 
 `events.ts` 必须定义以下事件，状态机对未列出的组合一律拒绝：
 
@@ -635,14 +635,14 @@ where id = :id and status = :expected_status and version = :expected_version;
 
 受影响行数不是 1 时返回冲突，不得覆盖其他请求刚完成的状态变化。
 
-- [ ] **Step 3: 实现报价规则**
+- [x] **Step 3: 实现报价规则**
 
 - 仅认证通过的开发者可报价。
 - 同一开发者对同一需求只有一份有效报价。
 - 报价包含金额、工期、方案、有效期。
 - 客户不能选择自己的开发者身份所提交的报价。
 
-- [ ] **Step 4: 事务化选标**
+- [x] **Step 4: 事务化选标**
 
 单个数据库事务完成：
 
@@ -653,7 +653,7 @@ where id = :id and status = :expected_status and version = :expected_version;
 5. 创建 `pending_payment` 订单并固化金额与佣金率。
 6. 将需求改为 `matched`。
 
-- [ ] **Step 5: 验证和提交**
+- [x] **Step 5: 验证和提交**
 
 ```bash
 pnpm vitest run tests/unit/orders/state-machine.test.ts tests/integration/quotes/select.test.ts

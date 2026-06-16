@@ -734,6 +734,7 @@ export type Database = {
           delivery_days: number
           demand_id: string
           developer_id: string
+          expires_at: string | null
           id: string
           proposal: string
           status: Database["public"]["Enums"]["quote_status"]
@@ -745,6 +746,7 @@ export type Database = {
           delivery_days: number
           demand_id: string
           developer_id: string
+          expires_at?: string | null
           id?: string
           proposal: string
           status?: Database["public"]["Enums"]["quote_status"]
@@ -756,6 +758,7 @@ export type Database = {
           delivery_days?: number
           demand_id?: string
           developer_id?: string
+          expires_at?: string | null
           id?: string
           proposal?: string
           status?: Database["public"]["Enums"]["quote_status"]
@@ -979,6 +982,31 @@ export type Database = {
       has_role: {
         Args: { required_role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
+      }
+      select_quote_for_order: {
+        Args: { quote_id: string }
+        Returns: {
+          accepted_at: string | null
+          amount_cents: number
+          commission_bps: number
+          completed_at: string | null
+          created_at: string
+          customer_id: string
+          demand_id: string
+          developer_id: string
+          id: string
+          paid_at: string | null
+          quote_id: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          updated_at: string
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
     }
     Enums: {

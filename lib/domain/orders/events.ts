@@ -1,0 +1,17 @@
+export type OrderEvent =
+  | "payment_succeeded"
+  | "payment_expired"
+  | "deliver"
+  | "reject_delivery"
+  | "accept_delivery"
+  | "open_dispute"
+  | "resolve_continue"
+  | "resolve_accept"
+  | "approve_refund"
+  | "refund_started"
+  | "refund_failed"
+  | "refund_succeeded"
+  | "profit_share_started"
+  | "profit_share_succeeded"
+  | "profit_share_failed"
+  | "retry_profit_share";
