@@ -802,15 +802,15 @@ git commit -m "feat: add acceptance reviews refunds and disputes"
 - Create: `app/(workspace)/workspace/notifications/page.tsx`
 - Test: `tests/unit/notifications/service.test.ts`
 
-- [ ] **Step 1: 写通知去重测试**
+- [x] **Step 1: 写通知去重测试**
 
 同一业务事件和接收者只能生成一条通知；邮件或短信失败不得回滚订单事务。
 
-- [ ] **Step 2: 实现事件通知**
+- [x] **Step 2: 实现事件通知**
 
 覆盖需求审核、报价、中标、支付、留言、交付、验收、退款、仲裁和分账。站内通知必发；短信和邮件按事件配置。
 
-- [ ] **Step 3: 验证和提交**
+- [x] **Step 3: 验证和提交**
 
 ```bash
 pnpm vitest run tests/unit/notifications/service.test.ts
