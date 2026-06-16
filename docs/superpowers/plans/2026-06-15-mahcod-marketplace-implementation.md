@@ -911,7 +911,7 @@ git commit -m "chore: harden and verify marketplace phase one"
 - Create: `docs/payments/funds-flow.md`
 - Create: `docs/payments/refund-dispute-policy.md`
 
-- [ ] **Step 1: 整理申请材料**
+- [x] **Step 1: 整理申请材料**
 
 清单必须包含：
 
@@ -935,7 +935,7 @@ git commit -m "chore: harden and verify marketplace phase one"
 - 平台佣金、手续费和结算周期。
 - API 权限、证书和生产验收要求。
 
-- [ ] **Step 3: 建立第二期启动闸门**
+- [x] **Step 3: 建立第二期启动闸门**
 
 以下任一项缺失，Task 16–19 保持阻塞：
 
