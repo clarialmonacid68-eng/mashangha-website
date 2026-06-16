@@ -761,7 +761,7 @@ git commit -m "feat: add order collaboration and delivery"
 - Test: `tests/unit/refunds/policy.test.ts`
 - Test: `tests/integration/orders/acceptance.test.ts`
 
-- [ ] **Step 1: 写退款资格和验收测试**
+- [x] **Step 1: 写退款资格和验收测试**
 
 规则：
 
@@ -772,19 +772,19 @@ git commit -m "feat: add order collaboration and delivery"
 - 客户拒绝验收必须提交理由。
 - 验收后立即进入 `accepted`，等待分账。
 
-- [ ] **Step 2: 实现拒绝验收和重新交付**
+- [x] **Step 2: 实现拒绝验收和重新交付**
 
 拒绝验收不关闭订单；订单回到 `in_progress`，保存拒绝理由，开发者可提交新交付版本。
 
-- [ ] **Step 3: 实现仲裁**
+- [x] **Step 3: 实现仲裁**
 
 仲裁创建后订单进入 `disputed`。后台可记录双方陈述、证据、专家意见和最终裁决；裁决结果只能是继续履约、验收结算或全额退款。
 
-- [ ] **Step 4: 实现评价**
+- [x] **Step 4: 实现评价**
 
 只有 `completed` 订单双方可各提交一次评价；公开开发者评分只统计可公开评价。
 
-- [ ] **Step 5: 验证和提交**
+- [x] **Step 5: 验证和提交**
 
 ```bash
 pnpm vitest run tests/unit/refunds/policy.test.ts tests/integration/orders/acceptance.test.ts

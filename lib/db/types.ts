@@ -959,6 +959,31 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_order_delivery: {
+        Args: { target_order_id: string }
+        Returns: {
+          accepted_at: string | null
+          amount_cents: number
+          commission_bps: number
+          completed_at: string | null
+          created_at: string
+          customer_id: string
+          demand_id: string
+          developer_id: string
+          id: string
+          paid_at: string | null
+          quote_id: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          updated_at: string
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       apply_for_developer: { Args: never; Returns: undefined }
       close_demand: {
         Args: { demand_id: string }
@@ -1030,9 +1055,85 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_order_review: {
+        Args: {
+          public_review?: boolean
+          rating_value: number
+          review_body?: string
+          target_order_id: string
+        }
+        Returns: {
+          author_id: string
+          body: string | null
+          created_at: string
+          id: string
+          is_public: boolean
+          order_id: string
+          rating: number
+          subject_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "reviews"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: { required_role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
+      }
+      open_order_dispute: {
+        Args: {
+          dispute_reason: string
+          requested_dispute_resolution: string
+          target_order_id: string
+        }
+        Returns: {
+          created_at: string
+          id: string
+          opened_by: string
+          order_id: string
+          reason: string
+          requested_resolution: string
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: Database["public"]["Enums"]["dispute_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "disputes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      reject_order_delivery: {
+        Args: { rejection_reason: string; target_order_id: string }
+        Returns: {
+          accepted_at: string | null
+          amount_cents: number
+          commission_bps: number
+          completed_at: string | null
+          created_at: string
+          customer_id: string
+          demand_id: string
+          developer_id: string
+          id: string
+          paid_at: string | null
+          quote_id: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          updated_at: string
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       select_quote_for_order: {
         Args: { quote_id: string }

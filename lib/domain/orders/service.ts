@@ -28,6 +28,12 @@ export type SubmitOrderDeliveryInput = {
   notes: string;
 };
 
+export type CreateOrderReviewInput = {
+  body?: string | null;
+  isPublic?: boolean;
+  rating: number;
+};
+
 type DeliveryRow = Database["public"]["Tables"]["deliveries"]["Row"];
 
 async function getCurrentUserId(supabase: SupabaseClient) {
@@ -170,4 +176,55 @@ export async function submitOrderDelivery(
   }
 
   return delivery;
+}
+
+export async function acceptOrderDelivery(
+  supabase: SupabaseClient,
+  orderId: string,
+) {
+  const { data, error } = await supabase.rpc("accept_order_delivery", {
+    target_order_id: orderId,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+export async function rejectOrderDelivery(
+  supabase: SupabaseClient,
+  orderId: string,
+  reason: string,
+) {
+  const { data, error } = await supabase.rpc("reject_order_delivery", {
+    rejection_reason: reason,
+    target_order_id: orderId,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+export async function createOrderReview(
+  supabase: SupabaseClient,
+  orderId: string,
+  input: CreateOrderReviewInput,
+) {
+  const { data, error } = await supabase.rpc("create_order_review", {
+    public_review: input.isPublic ?? true,
+    rating_value: input.rating,
+    review_body: input.body ?? null,
+    target_order_id: orderId,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
 }
