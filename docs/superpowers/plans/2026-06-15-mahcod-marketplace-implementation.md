@@ -672,7 +672,7 @@ git commit -m "feat: add quotes and transactional order creation"
 - Test: `tests/unit/payments/mock-provider.test.ts`
 - Test: `tests/integration/payments/mock-payment.test.ts`
 
-- [ ] **Step 1: 写支付接口契约测试**
+- [x] **Step 1: 写支付接口契约测试**
 
 ```ts
 export interface PaymentProvider {
@@ -689,7 +689,7 @@ export interface PaymentProvider {
 
 所有写接口接收 `idempotencyKey`。测试断言重复键返回同一业务结果；查询和账单接口必须可用于恢复任务与对账。
 
-- [ ] **Step 2: 实现模拟支付**
+- [x] **Step 2: 实现模拟支付**
 
 模拟渠道必须经过与真实渠道相同的服务层：
 
@@ -699,11 +699,11 @@ export interface PaymentProvider {
 - 确认成功后事务化更新 `payments` 与 `orders`。
 - 重复确认不重复记账。
 
-- [ ] **Step 3: 实现付款页**
+- [x] **Step 3: 实现付款页**
 
 页面显示订单摘要、开发者、全额金额、平台规则确认框和支付按钮。非订单客户不能创建支付。
 
-- [ ] **Step 4: 验证和提交**
+- [x] **Step 4: 验证和提交**
 
 ```bash
 pnpm vitest run tests/unit/payments/mock-provider.test.ts tests/integration/payments/mock-payment.test.ts
@@ -722,26 +722,26 @@ git commit -m "feat: add payment abstraction and mock checkout"
 - Create: `lib/storage/policy.ts`
 - Test: `tests/integration/orders/collaboration.test.ts`
 
-- [ ] **Step 1: 写附件越权和交付测试**
+- [x] **Step 1: 写附件越权和交付测试**
 
 覆盖：陌生用户无法获取签名 URL；开发者只能对自己的 `in_progress` 订单交付；替换交付时旧版本保留。
 
-- [ ] **Step 2: 实现留言**
+- [x] **Step 2: 实现留言**
 
 留言为非实时时间线。每条记录包含发送者、正文、附件、创建时间；禁止编辑，允许管理员按审计流程隐藏违规内容。
 
-- [ ] **Step 3: 实现文件规则**
+- [x] **Step 3: 实现文件规则**
 
 - 单文件上限由配置控制，首版建议 50 MB。
 - 允许文档、图片、压缩包和常见源码归档。
 - 文件路径包含订单 ID 和随机 ID，不使用原始文件名作为存储键。
 - 下载前验证订单参与关系。
 
-- [ ] **Step 4: 实现正式交付**
+- [x] **Step 4: 实现正式交付**
 
 正式交付必须有说明，并至少包含附件或交付链接。提交后订单进入 `delivered`，通知客户验收。
 
-- [ ] **Step 5: 验证和提交**
+- [x] **Step 5: 验证和提交**
 
 ```bash
 pnpm vitest run tests/integration/orders/collaboration.test.ts

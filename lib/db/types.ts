@@ -1059,6 +1059,30 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      submit_order_delivery: {
+        Args: {
+          delivery_notes: string
+          delivery_url?: string
+          target_order_id: string
+        }
+        Returns: {
+          created_at: string
+          delivery_url: string | null
+          developer_id: string
+          id: string
+          is_current: boolean
+          notes: string
+          order_id: string
+          updated_at: string
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "deliveries"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       app_role: "customer" | "developer" | "admin"
