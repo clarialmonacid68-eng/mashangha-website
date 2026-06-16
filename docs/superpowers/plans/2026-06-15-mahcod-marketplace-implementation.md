@@ -831,23 +831,23 @@ git commit -m "feat: add reliable marketplace notifications"
 - Create: `lib/security/audit.ts`
 - Test: `tests/e2e/admin.spec.ts`
 
-- [ ] **Step 1: 写管理员越权 E2E 测试**
+- [x] **Step 1: 写管理员越权 E2E 测试**
 
 普通客户和开发者访问 `/admin` 必须得到 403 或重定向；管理员操作必须新增审计日志。
 
-- [ ] **Step 2: 实现审核中心**
+- [x] **Step 2: 实现审核中心**
 
 开发者和需求审核必须填写通过备注或拒绝原因；后台展示资料版本和历史操作。
 
-- [ ] **Step 3: 实现订单和争议中心**
+- [x] **Step 3: 实现订单和争议中心**
 
 后台可查看订单时间线、模拟支付单、证据和日志，并处理审核与仲裁。真实退款、分账和支付对账页面在 Task 18 使用真实渠道模型实现，避免第一期制作无法验证的空壳后台。高风险操作需要二次确认并填写原因。
 
-- [ ] **Step 4: 实现第一期风控基础**
+- [x] **Step 4: 实现第一期风控基础**
 
 支持封禁用户、暂停需求、冻结订单操作、标记异常支付。冻结只阻止后续动作，不修改历史财务记录。
 
-- [ ] **Step 5: 验证和提交**
+- [x] **Step 5: 验证和提交**
 
 ```bash
 pnpm playwright test tests/e2e/admin.spec.ts
