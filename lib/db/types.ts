@@ -605,9 +605,12 @@ export type Database = {
       payments: {
         Row: {
           amount_cents: number
+          closed_at: string | null
           created_at: string
           id: string
+          idempotency_key: string | null
           order_id: string
+          paid_at: string | null
           platform_payment_no: string
           provider: string
           provider_transaction_id: string | null
@@ -617,9 +620,12 @@ export type Database = {
         }
         Insert: {
           amount_cents: number
+          closed_at?: string | null
           created_at?: string
           id?: string
+          idempotency_key?: string | null
           order_id: string
+          paid_at?: string | null
           platform_payment_no: string
           provider: string
           provider_transaction_id?: string | null
@@ -629,9 +635,12 @@ export type Database = {
         }
         Update: {
           amount_cents?: number
+          closed_at?: string | null
           created_at?: string
           id?: string
+          idempotency_key?: string | null
           order_id?: string
+          paid_at?: string | null
           platform_payment_no?: string
           provider?: string
           provider_transaction_id?: string | null
@@ -975,6 +984,48 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "demands"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      close_mock_payment: {
+        Args: { provider_payment_id: string }
+        Returns: {
+          payment: Database["public"]["Tables"]["payments"]["Row"]
+          target_order: Database["public"]["Tables"]["orders"]["Row"]
+        }[]
+      }
+      confirm_mock_payment: {
+        Args: { provider_payment_id: string }
+        Returns: {
+          payment: Database["public"]["Tables"]["payments"]["Row"]
+          target_order: Database["public"]["Tables"]["orders"]["Row"]
+        }[]
+      }
+      create_mock_payment: {
+        Args: {
+          payment_idempotency_key: string
+          provider_payment_id: string
+          target_order_id: string
+        }
+        Returns: {
+          amount_cents: number
+          closed_at: string | null
+          created_at: string
+          id: string
+          idempotency_key: string | null
+          order_id: string
+          paid_at: string | null
+          platform_payment_no: string
+          provider: string
+          provider_transaction_id: string | null
+          raw_status: Json | null
+          status: Database["public"]["Enums"]["payment_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "payments"
           isOneToOne: true
           isSetofReturn: false
         }
