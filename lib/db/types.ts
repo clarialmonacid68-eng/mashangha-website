@@ -145,12 +145,18 @@ export type Database = {
         Row: {
           budget_max_cents: number
           budget_min_cents: number
+          closed_at: string | null
+          cooperation_mode: string
           created_at: string
           customer_id: string
           description: string
           expected_delivery_date: string | null
+          expected_delivery_days: number | null
           id: string
+          matched_at: string | null
+          project_type: string
           published_at: string | null
+          review_notes: string | null
           status: Database["public"]["Enums"]["demand_status"]
           title: string
           updated_at: string
@@ -158,12 +164,18 @@ export type Database = {
         Insert: {
           budget_max_cents: number
           budget_min_cents: number
+          closed_at?: string | null
+          cooperation_mode?: string
           created_at?: string
           customer_id: string
           description: string
           expected_delivery_date?: string | null
+          expected_delivery_days?: number | null
           id?: string
+          matched_at?: string | null
+          project_type?: string
           published_at?: string | null
+          review_notes?: string | null
           status?: Database["public"]["Enums"]["demand_status"]
           title: string
           updated_at?: string
@@ -171,12 +183,18 @@ export type Database = {
         Update: {
           budget_max_cents?: number
           budget_min_cents?: number
+          closed_at?: string | null
+          cooperation_mode?: string
           created_at?: string
           customer_id?: string
           description?: string
           expected_delivery_date?: string | null
+          expected_delivery_days?: number | null
           id?: string
+          matched_at?: string | null
+          project_type?: string
           published_at?: string | null
+          review_notes?: string | null
           status?: Database["public"]["Enums"]["demand_status"]
           title?: string
           updated_at?: string
@@ -930,6 +948,34 @@ export type Database = {
     }
     Functions: {
       apply_for_developer: { Args: never; Returns: undefined }
+      close_demand: {
+        Args: { demand_id: string }
+        Returns: {
+          budget_max_cents: number
+          budget_min_cents: number
+          closed_at: string | null
+          cooperation_mode: string
+          created_at: string
+          customer_id: string
+          description: string
+          expected_delivery_date: string | null
+          expected_delivery_days: number | null
+          id: string
+          matched_at: string | null
+          project_type: string
+          published_at: string | null
+          review_notes: string | null
+          status: Database["public"]["Enums"]["demand_status"]
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "demands"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: { required_role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean

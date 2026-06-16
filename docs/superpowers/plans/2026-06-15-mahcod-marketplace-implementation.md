@@ -535,19 +535,19 @@ git commit -m "feat: add developer onboarding and profiles"
 - Create: `lib/domain/demands/service.ts`
 - Test: `tests/integration/demands/lifecycle.test.ts`
 
-- [ ] **Step 1: 写需求生命周期测试**
+- [x] **Step 1: 写需求生命周期测试**
 
 覆盖 `draft → pending_review → published → matched/closed`；已发布需求的客户可关闭但不能悄悄修改核心范围。
 
-- [ ] **Step 2: 实现需求表单**
+- [x] **Step 2: 实现需求表单**
 
 字段：标题、项目类型、详细描述、预算下限/上限、期望周期、合作方式、附件。预算必须大于零且下限不高于上限。
 
-- [ ] **Step 3: 实现市场查询**
+- [x] **Step 3: 实现市场查询**
 
 服务端支持项目类型、预算、周期、关键词和发布时间筛选；所有筛选写入 URL 查询参数，页面刷新后保持。
 
-- [ ] **Step 4: 验证和提交**
+- [x] **Step 4: 验证和提交**
 
 ```bash
 pnpm vitest run tests/integration/demands/lifecycle.test.ts

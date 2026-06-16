@@ -130,9 +130,14 @@ test("email and phone identifiers authenticate the same account", async ({
   await page
     .getByLabel("需求描述")
     .fill("希望在企业官网右下角接入 AI 客服，支持产品问答、线索收集和人工联系方式展示。");
+  await page.getByLabel("项目类型").selectOption("ai_app");
   await page.getByLabel("预算下限（元）").fill("3000");
   await page.getByLabel("预算上限（元）").fill("8000");
-  await page.getByRole("button", { name: "保存需求草稿" }).click();
-  await expect(page).toHaveURL(/\/workspace\/customer\/demands\/new\?saved=1$/);
-  await expect(page.getByText("需求草稿已保存。")).toBeVisible();
+  await page.getByLabel("期望周期（天）").fill("21");
+  await page.getByLabel("合作方式").selectOption("fixed_scope");
+  await page.getByRole("button", { name: "提交需求审核" }).click();
+  await expect(page).toHaveURL(
+    /\/workspace\/customer\/demands\/new\?submitted=1$/,
+  );
+  await expect(page.getByText("需求已提交审核。")).toBeVisible();
 });

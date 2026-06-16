@@ -276,6 +276,33 @@ a:focus-visible {
   gap: 18px;
 }
 
+.marketplace-filters {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  margin: 0 0 28px;
+}
+
+.marketplace-filters input,
+.marketplace-filters select,
+.marketplace-filters button {
+  min-height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--foreground);
+  font: inherit;
+  padding: 10px 12px;
+}
+
+.marketplace-filters button {
+  border-color: var(--teal);
+  background: var(--teal);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 800;
+}
+
 .marketplace-card,
 .empty-state,
 .profile-card {
