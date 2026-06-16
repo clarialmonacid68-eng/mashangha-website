@@ -193,34 +193,70 @@ export type Database = {
       developer_profiles: {
         Row: {
           bio: string | null
+          city: string | null
+          contact: string | null
           created_at: string
+          display_name: string | null
           headline: string | null
           hourly_rate_cents: number | null
+          payout_subject_name: string | null
+          payout_subject_type: string | null
+          portfolio_description: string | null
+          portfolio_image_url: string | null
+          portfolio_title: string | null
+          portfolio_url: string | null
+          rejection_reason: string | null
           review_status: Database["public"]["Enums"]["review_status"]
           reviewed_at: string | null
+          service_scopes: string[]
           skills: string[]
+          starting_price_cents: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
           bio?: string | null
+          city?: string | null
+          contact?: string | null
           created_at?: string
+          display_name?: string | null
           headline?: string | null
           hourly_rate_cents?: number | null
+          payout_subject_name?: string | null
+          payout_subject_type?: string | null
+          portfolio_description?: string | null
+          portfolio_image_url?: string | null
+          portfolio_title?: string | null
+          portfolio_url?: string | null
+          rejection_reason?: string | null
           review_status?: Database["public"]["Enums"]["review_status"]
           reviewed_at?: string | null
+          service_scopes?: string[]
           skills?: string[]
+          starting_price_cents?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
           bio?: string | null
+          city?: string | null
+          contact?: string | null
           created_at?: string
+          display_name?: string | null
           headline?: string | null
           hourly_rate_cents?: number | null
+          payout_subject_name?: string | null
+          payout_subject_type?: string | null
+          portfolio_description?: string | null
+          portfolio_image_url?: string | null
+          portfolio_title?: string | null
+          portfolio_url?: string | null
+          rejection_reason?: string | null
           review_status?: Database["public"]["Enums"]["review_status"]
           reviewed_at?: string | null
+          service_scopes?: string[]
           skills?: string[]
+          starting_price_cents?: number | null
           updated_at?: string
           user_id?: string
         }

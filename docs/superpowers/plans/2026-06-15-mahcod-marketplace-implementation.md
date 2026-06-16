@@ -494,11 +494,11 @@ git commit -m "feat: migrate public marketplace pages"
 - Create: `lib/storage/files.ts`
 - Test: `tests/integration/developers/apply.test.ts`
 
-- [ ] **Step 1: 写认证申请测试**
+- [x] **Step 1: 写认证申请测试**
 
 覆盖：必填资料、至少一项技能、作品 URL 校验、未审核资料不公开、重复提交更新现有草稿而非创建重复记录。
 
-- [ ] **Step 2: 实现申请表**
+- [x] **Step 2: 实现申请表**
 
 字段固定为：
 
@@ -512,11 +512,11 @@ git commit -m "feat: migrate public marketplace pages"
 - 联系方式
 - 收款主体类型与名称
 
-- [ ] **Step 3: 实现审核状态**
+- [x] **Step 3: 实现审核状态**
 
 状态为 `draft → pending → approved/rejected`。被拒绝时必须保存原因并允许重新提交；公开页面只读取 `approved`。
 
-- [ ] **Step 4: 验证和提交**
+- [x] **Step 4: 验证和提交**
 
 ```bash
 pnpm vitest run tests/integration/developers/apply.test.ts

@@ -18,6 +18,7 @@ const roleConfig = {
     label: "开发者工作台",
     links: [
       { href: "/workspace/developer", label: "概览" },
+      { href: "/workspace/developer/profile", label: "认证资料" },
       { href: "/workspace/developer/demands", label: "可报价需求" },
       { href: "/workspace/developer/quotes", label: "我的报价" },
       { href: "/workspace/orders", label: "履约订单" },

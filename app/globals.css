@@ -412,6 +412,7 @@ a:focus-visible {
 }
 
 .auth-form input,
+.auth-form select,
 .auth-form textarea {
   width: 100%;
   border: 1px solid var(--line);
@@ -422,7 +423,8 @@ a:focus-visible {
   padding: 11px 13px;
 }
 
-.auth-form input {
+.auth-form input,
+.auth-form select {
   min-height: 48px;
 }
 
@@ -432,6 +434,7 @@ a:focus-visible {
 }
 
 .auth-form input:focus,
+.auth-form select:focus,
 .auth-form textarea:focus {
   border-color: var(--teal);
   outline: 3px solid rgb(31 169 149 / 15%);
