@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { AdminShell } from "@/components/admin/admin-shell";
@@ -13,9 +13,12 @@ describe("application shells", () => {
       "href",
       "/",
     );
-    expect(screen.getByRole("link", { name: "需求市场" })).toBeInTheDocument();
+    const mainNavigation = screen.getByLabelText("主导航");
     expect(
-      screen.getByRole("link", { name: "开发者市场" }),
+      within(mainNavigation).getByRole("link", { name: "需求市场" }),
+    ).toBeInTheDocument();
+    expect(
+      within(mainNavigation).getByRole("link", { name: "开发者市场" }),
     ).toBeInTheDocument();
   });
 

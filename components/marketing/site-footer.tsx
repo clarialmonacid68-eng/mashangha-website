@@ -13,7 +13,7 @@ export function SiteFooter() {
         <Link href="/rules/trading">交易规则</Link>
         <Link href="/rules/disputes">争议规则</Link>
       </nav>
-      <p className="site-footer-copy">© 2026 码上好</p>
+      <p className="site-footer-copy">© 2026 码上好 · mshcode.com</p>
     </footer>
   );
 }

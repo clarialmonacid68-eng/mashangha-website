@@ -458,11 +458,11 @@ git commit -m "feat: add otp authentication and role switching"
 - Create: `components/marketing/home-sections.tsx`
 - Test: `tests/e2e/public-pages.spec.ts`
 
-- [ ] **Step 1: 写公开页面 E2E 测试**
+- [x] **Step 1: 写公开页面 E2E 测试**
 
 验证首页主 CTA、需求市场、开发者市场、规则页、移动端导航均可访问且没有静态原型中的虚假成交数字。
 
-- [ ] **Step 2: 迁移现有内容**
+- [x] **Step 2: 迁移现有内容**
 
 使用 `legacy/` 作为文案和视觉参考，删除或替换：
 
@@ -470,11 +470,11 @@ git commit -m "feat: add otp authentication and role switching"
 - 尚未取得能力时的“资金托管”“保证退款”“30 天售后”承诺。
 - 无目标的登录链接和 `alert()` 演示逻辑。
 
-- [ ] **Step 3: 补齐元数据**
+- [x] **Step 3: 补齐元数据**
 
 每个公开页面设置唯一 title、description、canonical；生成 `app/sitemap.ts` 与 `app/robots.ts`，移除旧静态 `sitemap.xml` 和 `robots.txt`。
 
-- [ ] **Step 4: 验证和提交**
+- [x] **Step 4: 验证和提交**
 
 ```bash
 pnpm playwright test tests/e2e/public-pages.spec.ts

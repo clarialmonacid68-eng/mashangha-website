@@ -6,7 +6,7 @@ const navigation = [
   { href: "/demands", label: "需求市场" },
   { href: "/developers", label: "开发者市场" },
   { href: "/#how-it-works", label: "如何运作" },
-  { href: "/developer/apply", label: "开发者入驻" },
+  { href: "/workspace/settings", label: "开发者入驻" },
 ];
 
 export function SiteHeader() {
@@ -30,8 +30,21 @@ export function SiteHeader() {
           <Button href="/login" variant="ghost">
             登录
           </Button>
-          <Button href="/demands/new">发布需求</Button>
+          <Button href="/workspace/customer/demands/new">发布需求</Button>
         </div>
+
+        <details className="mobile-navigation">
+          <summary>菜单</summary>
+          <nav aria-label="移动端导航">
+            {navigation.map((item) => (
+              <Link href={item.href} key={item.href}>
+                {item.label}
+              </Link>
+            ))}
+            <Link href="/rules/trading">交易规则</Link>
+            <Link href="/login">登录</Link>
+          </nav>
+        </details>
       </div>
     </header>
   );
