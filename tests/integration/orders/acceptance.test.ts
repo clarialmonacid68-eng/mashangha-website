@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import {
   acceptOrderDelivery,
+  completeAcceptedOrderWithMockSettlement,
   createOrderReview,
   rejectOrderDelivery,
 } from "@/lib/domain/orders/service";
@@ -92,6 +93,26 @@ describeWithDatabase("order acceptance, disputes and reviews", () => {
     if (orderError) throw orderError;
     createdOrderIds.push(order.id);
     return order;
+  }
+
+  async function createSucceededPayment(orderId: string) {
+    const { data: payment, error } = await admin
+      .from("payments")
+      .insert({
+        amount_cents: 600_000,
+        idempotency_key: `settlement-${orderId}`,
+        order_id: orderId,
+        platform_payment_no: `mock-pay-${crypto.randomUUID()}`,
+        provider: "mock",
+        provider_transaction_id: `mock-tx-${crypto.randomUUID()}`,
+        raw_status: { status: "succeeded" },
+        status: "succeeded",
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return payment;
   }
 
   beforeAll(async () => {
@@ -226,6 +247,38 @@ describeWithDatabase("order acceptance, disputes and reviews", () => {
       author_id: developerId,
       rating: 5,
       subject_id: customerId,
+    });
+  });
+
+  it("completes an accepted order through mock settlement before review", async () => {
+    const order = await createOrder("delivered");
+    await createSucceededPayment(order.id);
+    await acceptOrderDelivery(customer, order.id);
+
+    const completed = await completeAcceptedOrderWithMockSettlement(admin, order.id);
+    expect(completed.status).toBe("completed");
+    expect(completed.completed_at).toEqual(expect.any(String));
+
+    const { data: share } = await admin
+      .from("profit_shares")
+      .select("commission_amount_cents, developer_amount_cents, status")
+      .eq("order_id", order.id)
+      .single();
+    expect(share).toMatchObject({
+      commission_amount_cents: 60_000,
+      developer_amount_cents: 540_000,
+      status: "succeeded",
+    });
+
+    await expect(
+      createOrderReview(customer, order.id, {
+        body: "验收结算完成后可以评价。",
+        isPublic: true,
+        rating: 5,
+      }),
+    ).resolves.toMatchObject({
+      author_id: customerId,
+      subject_id: developerId,
     });
   });
 });

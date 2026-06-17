@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import {
   acceptOrderDelivery,
+  completeAcceptedOrderWithMockSettlement,
   createOrderMessage,
   createOrderReview,
   submitOrderDelivery,
@@ -33,10 +34,17 @@ test("developer messages, delivers and customer accepts with review", async () =
   });
   const accepted = await acceptOrderDelivery(customer.client, order.id);
 
-  await admin
-    .from("orders")
-    .update({ completed_at: new Date().toISOString(), status: "completed" })
-    .eq("id", order.id);
+  await admin.from("payments").insert({
+    amount_cents: order.amount_cents,
+    idempotency_key: `flow-settlement-${order.id}`,
+    order_id: order.id,
+    platform_payment_no: `flow-pay-${crypto.randomUUID()}`,
+    provider: "mock",
+    provider_transaction_id: `flow-tx-${crypto.randomUUID()}`,
+    raw_status: { status: "succeeded" },
+    status: "succeeded",
+  });
+  await completeAcceptedOrderWithMockSettlement(admin, order.id);
   const review = await createOrderReview(customer.client, order.id, {
     body: "交付清楚，沟通顺畅。",
     isPublic: true,

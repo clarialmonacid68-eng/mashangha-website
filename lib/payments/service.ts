@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/lib/db/types";
+import { createServiceInAppNotification } from "@/lib/notifications/repository";
 import type { PaymentProvider } from "@/lib/payments/provider";
 
 type OrderRow = Database["public"]["Tables"]["orders"]["Row"];
@@ -106,7 +107,19 @@ export async function confirmMockPayment(
     throw new Error(error.message);
   }
 
-  return normalizePaymentOrderResult(data);
+  const result = normalizePaymentOrderResult(data);
+  await createServiceInAppNotification({
+    eventKey: `payment:${result.order.id}:succeeded`,
+    metadata: {
+      orderId: result.order.id,
+      paymentId: result.payment.id,
+    },
+    recipientId: result.order.developer_id,
+    title: "客户已完成模拟付款",
+    type: "payment_succeeded",
+  });
+
+  return result;
 }
 
 export async function closeOrderPayment(

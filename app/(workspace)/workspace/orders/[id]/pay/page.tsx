@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MockPaymentProvider } from "@/lib/payments/mock-provider";
-import { createOrderPayment } from "@/lib/payments/service";
-import { createClient } from "@/lib/auth/server";
+import { confirmMockPayment, createOrderPayment } from "@/lib/payments/service";
+import { createClient, createServiceClient } from "@/lib/auth/server";
 
 const currency = new Intl.NumberFormat("zh-CN", {
   style: "currency",
@@ -40,6 +40,67 @@ async function createPayment(formData: FormData) {
       providerPaymentId,
     )}`,
   );
+}
+
+async function confirmPayment(formData: FormData) {
+  "use server";
+
+  const orderId = String(formData.get("orderId") ?? "");
+  const providerPaymentId = String(formData.get("providerPaymentId") ?? "");
+
+  if (!providerPaymentId) {
+    redirect(`/workspace/orders/${orderId}/pay?error=confirm_failed`);
+  }
+
+  const userClient = await createClient();
+  const {
+    data: { user },
+  } = await userClient.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const service = createServiceClient();
+  const { data: payment } = await service
+    .from("payments")
+    .select("amount_cents, order_id, provider_transaction_id, status")
+    .eq("provider", "mock")
+    .eq("provider_transaction_id", providerPaymentId)
+    .single();
+
+  if (!payment || payment.order_id !== orderId) {
+    redirect(`/workspace/orders/${orderId}/pay?error=confirm_failed`);
+  }
+
+  const { data: order } = await service
+    .from("orders")
+    .select("customer_id")
+    .eq("id", payment.order_id)
+    .single();
+
+  if (order?.customer_id !== user.id) {
+    redirect("/workspace/settings");
+  }
+
+  const provider = new MockPaymentProvider();
+  provider.seedPayment({
+    amountCents: payment.amount_cents,
+    providerPaymentId,
+    status: payment.status === "closed" ? "closed" : "pending",
+  });
+
+  try {
+    await confirmMockPayment(service, provider, { providerPaymentId });
+  } catch {
+    redirect(
+      `/workspace/orders/${orderId}/pay?payment=${encodeURIComponent(
+        providerPaymentId,
+      )}&error=confirm_failed`,
+    );
+  }
+
+  redirect(`/workspace/orders/${orderId}?payment=confirmed`);
 }
 
 export default async function OrderPayPage({
@@ -87,6 +148,9 @@ export default async function OrderPayPage({
         {query.error === "create_failed" ? (
           <p className="auth-message">创建支付单失败，请稍后重试。</p>
         ) : null}
+        {query.error === "confirm_failed" ? (
+          <p className="auth-message">确认模拟支付失败，请稍后重试。</p>
+        ) : null}
         {query.payment ? (
           <p className="auth-message">模拟支付单已创建：{query.payment}</p>
         ) : null}
@@ -108,6 +172,17 @@ export default async function OrderPayPage({
         ) : (
           <p className="auth-message">该订单当前无需付款。</p>
         )}
+        {order.status === "pending_payment" && query.payment ? (
+          <form action={confirmPayment} className="auth-form">
+            <input name="orderId" type="hidden" value={order.id} />
+            <input
+              name="providerPaymentId"
+              type="hidden"
+              value={query.payment}
+            />
+            <Button type="submit">确认模拟支付</Button>
+          </form>
+        ) : null}
       </Card>
     </div>
   );

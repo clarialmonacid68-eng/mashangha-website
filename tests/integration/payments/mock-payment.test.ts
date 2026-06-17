@@ -27,6 +27,7 @@ describeWithDatabase("mock full-payment checkout", () => {
   let admin: SupabaseClient;
   let customer: SupabaseClient;
   let developer: SupabaseClient;
+  let developerId: string;
   const createdUserIds: string[] = [];
 
   async function createSignedInUser(label: string) {
@@ -108,6 +109,7 @@ describeWithDatabase("mock full-payment checkout", () => {
     ]);
     customer = customerAccount.client;
     developer = developerAccount.client;
+    developerId = developerAccount.userId;
     await approveDeveloper(developerAccount.userId);
   });
 
@@ -170,6 +172,20 @@ describeWithDatabase("mock full-payment checkout", () => {
       .eq("order_id", order.id)
       .eq("status", "succeeded");
     expect(payments).toHaveLength(1);
+
+    const { data: notifications } = await admin
+      .from("notifications")
+      .select("event_key, event_type, recipient_id, title")
+      .eq("recipient_id", developerId)
+      .eq("event_key", `payment:${order.id}:succeeded`);
+    expect(notifications).toEqual([
+      {
+        event_key: `payment:${order.id}:succeeded`,
+        event_type: "payment_succeeded",
+        recipient_id: developerId,
+        title: "客户已完成模拟付款",
+      },
+    ]);
   });
 
   it("closes a pending payment before closing the order", async () => {

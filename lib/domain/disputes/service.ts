@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { createServiceInAppNotification } from "@/lib/notifications/repository";
+
 export type OpenOrderDisputeInput = {
   reason: string;
   requestedResolution: "accept" | "continue" | "refund";
@@ -108,6 +110,18 @@ export async function resolveDisputeAsFullRefund(
 
   if (auditError) {
     throw new Error(auditError.message);
+  }
+
+  for (const recipientId of [order.customer_id, order.developer_id]) {
+    await createServiceInAppNotification({
+      actorId: input.adminId,
+      body: notes,
+      eventKey: `dispute:${dispute.id}:resolved_refund`,
+      metadata: { disputeId: dispute.id, orderId: order.id },
+      recipientId,
+      title: "争议已裁决全额退款",
+      type: "refund_updated",
+    });
   }
 
   return { dispute, order };
