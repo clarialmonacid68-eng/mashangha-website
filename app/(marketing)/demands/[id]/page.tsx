@@ -38,6 +38,7 @@ export default async function DemandDetailPage({
     )
     .eq("id", id)
     .eq("status", "published")
+    .eq("is_suspended", false)
     .maybeSingle();
 
   if (!demand) {

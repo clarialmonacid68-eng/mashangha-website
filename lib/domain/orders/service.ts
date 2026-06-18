@@ -2,7 +2,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/lib/db/types";
 import { createServiceInAppNotification } from "@/lib/notifications/repository";
-import { createOrderStoragePath } from "@/lib/storage/policy";
+import { logBusinessEvent } from "@/lib/observability/logger";
+import {
+  ORDER_FILES_BUCKET,
+  createOrderStoragePath,
+} from "@/lib/storage/policy";
 
 type AttachmentInput = {
   contentType?: string | null;
@@ -67,6 +71,22 @@ async function assertCanAccessOrder(supabase: SupabaseClient, orderId: string) {
   }
 }
 
+async function assertOrderNotFrozen(supabase: SupabaseClient, orderId: string) {
+  const { data, error } = await supabase
+    .from("orders")
+    .select("is_frozen")
+    .eq("id", orderId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (data?.is_frozen) {
+    throw new Error("订单已被运营冻结，暂不能操作");
+  }
+}
+
 function normalizeAttachments(attachments: AttachmentInput[] = []) {
   return attachments.map((attachment) => ({
     content_type: attachment.contentType ?? null,
@@ -78,16 +98,63 @@ function normalizeAttachments(attachments: AttachmentInput[] = []) {
 
 export async function createOrderFileUploadRequest(
   supabase: SupabaseClient,
+  service: SupabaseClient<Database>,
   input: CreateOrderFileUploadInput,
 ) {
+  // Authorize with the caller's RLS-scoped client, then mint the signed upload
+  // URL with the service role (the bucket is private and has no end-user policy).
   await assertCanAccessOrder(supabase, input.orderId);
+  await assertOrderNotFrozen(supabase, input.orderId);
   const storagePath = createOrderStoragePath(input);
 
+  const { data, error } = await service.storage
+    .from(ORDER_FILES_BUCKET)
+    .createSignedUploadUrl(storagePath);
+
+  if (error || !data) {
+    throw new Error(error?.message ?? "生成上传签名失败");
+  }
+
   return {
+    bucket: ORDER_FILES_BUCKET,
     expiresIn: 600,
-    signedUploadUrl: `/api/files/sign?path=${encodeURIComponent(storagePath)}`,
     storagePath,
+    token: data.token,
   };
+}
+
+export async function createOrderFileDownloadUrl(
+  supabase: SupabaseClient,
+  service: SupabaseClient<Database>,
+  input: { orderId: string; storagePath: string },
+) {
+  await assertCanAccessOrder(supabase, input.orderId);
+
+  // Confirm the path actually belongs to this order before signing it.
+  const { data: attachment, error: attachmentError } = await supabase
+    .from("order_attachments")
+    .select("id")
+    .eq("order_id", input.orderId)
+    .eq("storage_path", input.storagePath)
+    .maybeSingle();
+
+  if (attachmentError) {
+    throw new Error(attachmentError.message);
+  }
+
+  if (!attachment) {
+    throw new Error("附件不存在或无权访问");
+  }
+
+  const { data, error } = await service.storage
+    .from(ORDER_FILES_BUCKET)
+    .createSignedUrl(input.storagePath, 300);
+
+  if (error || !data) {
+    throw new Error(error?.message ?? "生成下载签名失败");
+  }
+
+  return { expiresIn: 300, signedUrl: data.signedUrl };
 }
 
 export async function createOrderMessage(
@@ -96,6 +163,7 @@ export async function createOrderMessage(
   input: CreateOrderMessageInput,
 ) {
   const senderId = await getCurrentUserId(supabase);
+  await assertOrderNotFrozen(supabase, orderId);
   const body = input.body.trim();
 
   if (!body) {
@@ -163,6 +231,7 @@ export async function submitOrderDelivery(
   input: SubmitOrderDeliveryInput,
 ) {
   const developerId = await getCurrentUserId(supabase);
+  await assertOrderNotFrozen(supabase, orderId);
 
   if (!input.deliveryUrl && !input.attachments?.length) {
     throw new Error("正式交付必须包含附件或交付链接");
@@ -222,6 +291,7 @@ export async function acceptOrderDelivery(
   supabase: SupabaseClient,
   orderId: string,
 ) {
+  await assertOrderNotFrozen(supabase, orderId);
   const { data, error } = await supabase.rpc("accept_order_delivery", {
     target_order_id: orderId,
   });
@@ -248,6 +318,7 @@ export async function completeAcceptedOrderWithMockSettlement(
   supabase: SupabaseClient,
   orderId: string,
 ) {
+  await assertOrderNotFrozen(supabase, orderId);
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .select("id, amount_cents, commission_bps, status")
@@ -337,6 +408,8 @@ export async function completeAcceptedOrderWithMockSettlement(
     });
   }
 
+  logBusinessEvent("order.completed", { orderId });
+
   return completed as OrderRow;
 }
 
@@ -362,6 +435,7 @@ export async function createOrderReview(
   orderId: string,
   input: CreateOrderReviewInput,
 ) {
+  await assertOrderNotFrozen(supabase, orderId);
   const { data, error } = await supabase.rpc("create_order_review", {
     public_review: input.isPublic ?? true,
     rating_value: input.rating,

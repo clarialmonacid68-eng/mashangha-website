@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/lib/db/types";
 import { createServiceInAppNotification } from "@/lib/notifications/repository";
+import { logBusinessEvent } from "@/lib/observability/logger";
 import type { PaymentProvider } from "@/lib/payments/provider";
 
 type OrderRow = Database["public"]["Tables"]["orders"]["Row"];
@@ -50,12 +51,16 @@ export async function createOrderPayment(
 ) {
   const { data: order, error: orderError } = await supabase
     .from("orders")
-    .select("id, amount_cents, status")
+    .select("id, amount_cents, status, is_frozen")
     .eq("id", input.orderId)
     .single();
 
   if (orderError) {
     throw new Error(orderError.message);
+  }
+
+  if (order.is_frozen) {
+    throw new Error("订单已被运营冻结，暂不能付款");
   }
 
   if (order.status !== "pending_payment") {
@@ -117,6 +122,11 @@ export async function confirmMockPayment(
     recipientId: result.order.developer_id,
     title: "客户已完成模拟付款",
     type: "payment_succeeded",
+  });
+
+  logBusinessEvent("payment.succeeded", {
+    orderId: result.order.id,
+    paymentId: result.payment.id,
   });
 
   return result;

@@ -153,6 +153,7 @@ export type Database = {
           expected_delivery_date: string | null
           expected_delivery_days: number | null
           id: string
+          is_suspended: boolean
           matched_at: string | null
           project_type: string
           published_at: string | null
@@ -172,6 +173,7 @@ export type Database = {
           expected_delivery_date?: string | null
           expected_delivery_days?: number | null
           id?: string
+          is_suspended?: boolean
           matched_at?: string | null
           project_type?: string
           published_at?: string | null
@@ -191,6 +193,7 @@ export type Database = {
           expected_delivery_date?: string | null
           expected_delivery_days?: number | null
           id?: string
+          is_suspended?: boolean
           matched_at?: string | null
           project_type?: string
           published_at?: string | null
@@ -589,6 +592,7 @@ export type Database = {
           demand_id: string
           developer_id: string
           id: string
+          is_frozen: boolean
           paid_at: string | null
           quote_id: string | null
           status: Database["public"]["Enums"]["order_status"]
@@ -605,6 +609,7 @@ export type Database = {
           demand_id: string
           developer_id: string
           id?: string
+          is_frozen?: boolean
           paid_at?: string | null
           quote_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
@@ -621,6 +626,7 @@ export type Database = {
           demand_id?: string
           developer_id?: string
           id?: string
+          is_frozen?: boolean
           paid_at?: string | null
           quote_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]

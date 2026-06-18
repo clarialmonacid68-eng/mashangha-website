@@ -31,7 +31,43 @@ export function securityLog(event: string, metadata: LogMetadata = {}) {
   console.info(
     JSON.stringify({
       event,
+      kind: "security",
       metadata: redactSecurityMetadata(metadata),
+      timestamp: new Date().toISOString(),
+    }),
+  );
+}
+
+/**
+ * Structured business-event telemetry. Emits one JSON line per key domain event
+ * (payment succeeded, refund settled, dispute resolved, ...) so operations can
+ * track conversion and funnel health. Swap the console sink for a real provider
+ * later without touching call sites.
+ */
+export function logBusinessEvent(event: string, metadata: LogMetadata = {}) {
+  console.info(
+    JSON.stringify({
+      event,
+      kind: "business_event",
+      metadata: redactSecurityMetadata(metadata),
+      timestamp: new Date().toISOString(),
+    }),
+  );
+}
+
+/** Structured error telemetry with secret redaction. */
+export function logError(
+  context: string,
+  error: unknown,
+  metadata: LogMetadata = {},
+) {
+  console.error(
+    JSON.stringify({
+      context,
+      kind: "error",
+      message: error instanceof Error ? error.message : String(error),
+      metadata: redactSecurityMetadata(metadata),
+      stack: error instanceof Error ? error.stack : undefined,
       timestamp: new Date().toISOString(),
     }),
   );

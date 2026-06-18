@@ -129,7 +129,7 @@ describeWithDatabase("order collaboration and delivery", () => {
     const order = await createOrder("in_progress");
 
     await expect(
-      createOrderFileUploadRequest(stranger, {
+      createOrderFileUploadRequest(stranger, admin, {
         contentType: "application/pdf",
         fileName: "scope.pdf",
         orderId: order.id,
@@ -137,7 +137,7 @@ describeWithDatabase("order collaboration and delivery", () => {
       }),
     ).rejects.toThrow("无权访问该订单");
 
-    const upload = await createOrderFileUploadRequest(customer, {
+    const upload = await createOrderFileUploadRequest(customer, admin, {
       contentType: "application/pdf",
       fileName: "scope.pdf",
       orderId: order.id,

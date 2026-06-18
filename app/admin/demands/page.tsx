@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { setDemandSuspension } from "@/lib/domain/admin/governance";
 import { createServiceClient } from "@/lib/auth/server";
 import { requireAdmin, writeAuditLog } from "@/lib/security/audit";
 
@@ -44,6 +45,30 @@ async function reviewDemand(formData: FormData) {
   redirect(`/admin/demands?reviewed=${demandId}`);
 }
 
+async function toggleSuspension(formData: FormData) {
+  "use server";
+
+  const admin = await requireAdmin();
+  const demandId = String(formData.get("demandId") ?? "");
+  const suspended = String(formData.get("suspended") ?? "") === "suspend";
+  const note = String(formData.get("note") ?? "").trim();
+
+  if (!demandId || !note) {
+    redirect("/admin/demands?error=missing_note");
+  }
+
+  const service = createServiceClient();
+  await setDemandSuspension(service, {
+    adminId: admin.id,
+    demandId,
+    note,
+    suspended,
+  });
+
+  revalidatePath("/admin/demands");
+  redirect(`/admin/demands?reviewed=${demandId}`);
+}
+
 export default async function AdminDemandsPage({
   searchParams,
 }: {
@@ -54,7 +79,9 @@ export default async function AdminDemandsPage({
   const service = createServiceClient();
   const { data: demands } = await service
     .from("demands")
-    .select("id, title, description, status, review_notes, customer_id, created_at")
+    .select(
+      "id, title, description, status, review_notes, is_suspended, customer_id, created_at",
+    )
     .order("created_at", { ascending: false })
     .limit(50);
 
@@ -74,6 +101,7 @@ export default async function AdminDemandsPage({
             <h2>{demand.title}</h2>
             <p>{demand.description}</p>
             {demand.review_notes ? <p>审核备注：{demand.review_notes}</p> : null}
+            <p>展示状态：{demand.is_suspended ? "已暂停下架" : "正常"}</p>
             <form action={reviewDemand} className="auth-form">
               <input name="demandId" type="hidden" value={demand.id} />
               <label htmlFor={`demand-note-${demand.id}`}>审核备注</label>
@@ -86,6 +114,26 @@ export default async function AdminDemandsPage({
                   拒绝
                 </Button>
               </div>
+            </form>
+            <form action={toggleSuspension} className="auth-form">
+              <input name="demandId" type="hidden" value={demand.id} />
+              <input
+                name="suspended"
+                type="hidden"
+                value={demand.is_suspended ? "resume" : "suspend"}
+              />
+              <label htmlFor={`demand-suspend-note-${demand.id}`}>
+                暂停 / 恢复原因
+              </label>
+              <textarea
+                id={`demand-suspend-note-${demand.id}`}
+                name="note"
+                required
+                rows={2}
+              />
+              <Button type="submit" variant="secondary">
+                {demand.is_suspended ? "恢复展示" : "暂停下架"}
+              </Button>
             </form>
           </Card>
         ))}

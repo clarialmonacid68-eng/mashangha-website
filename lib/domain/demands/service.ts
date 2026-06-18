@@ -184,6 +184,7 @@ export async function listPublishedDemands(
       "id, title, description, project_type, cooperation_mode, budget_min_cents, budget_max_cents, expected_delivery_days, published_at",
     )
     .eq("status", "published")
+    .eq("is_suspended", false)
     .order("published_at", { ascending: false })
     .limit(24);
 

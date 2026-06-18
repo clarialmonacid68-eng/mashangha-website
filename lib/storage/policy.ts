@@ -1,5 +1,7 @@
 const DEFAULT_MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024;
 
+export const ORDER_FILES_BUCKET = "order-files";
+
 const allowedContentTypes = new Set([
   "application/json",
   "application/pdf",
