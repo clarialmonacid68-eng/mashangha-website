@@ -17,14 +17,15 @@ function VerifyForm() {
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function verifyCode(form: HTMLFormElement) {
+    const formData = new FormData(form);
+    const submittedToken = String(formData.get("otp") ?? "").trim();
     setPending(true);
     setMessage("");
 
     const { error } = await createClient().auth.verifyOtp({
       phone,
-      token: token.trim(),
+      token: submittedToken,
       type: verificationType,
     });
 
@@ -36,6 +37,11 @@ function VerifyForm() {
     }
 
     window.location.assign("/workspace/settings");
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void verifyCode(event.currentTarget);
   }
 
   return (
@@ -56,12 +62,23 @@ function VerifyForm() {
             id="otp"
             inputMode="numeric"
             maxLength={6}
+            name="otp"
             onChange={(event) => setToken(event.target.value)}
             pattern="[0-9]{6}"
             required
             value={token}
           />
-          <Button disabled={pending || !phone} type="submit">
+          <Button
+            disabled={pending || !phone}
+            onClick={(event) => {
+              const form = event.currentTarget.form;
+              if (!form?.reportValidity()) {
+                return;
+              }
+              void verifyCode(form);
+            }}
+            type="button"
+          >
             {pending
               ? "正在验证..."
               : verificationType === "phone_change"

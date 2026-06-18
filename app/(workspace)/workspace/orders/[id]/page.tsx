@@ -2,12 +2,17 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { OrderFileUpload } from "@/components/workspace/order-file-upload";
 import {
+  acceptOrderDelivery,
+  completeAcceptedOrderWithMockSettlement,
   createOrderMessage,
+  createOrderReview,
+  rejectOrderDelivery,
   submitOrderDelivery,
   type SubmitOrderDeliveryInput,
 } from "@/lib/domain/orders/service";
-import { createClient } from "@/lib/auth/server";
+import { createClient, createServiceClient } from "@/lib/auth/server";
 
 function optionalAttachment(formData: FormData) {
   const storagePath = String(formData.get("attachmentPath") ?? "").trim();
@@ -71,15 +76,123 @@ async function deliverOrder(formData: FormData) {
   redirect(`/workspace/orders/${orderId}?delivery=submitted`);
 }
 
+async function acceptDelivery(formData: FormData) {
+  "use server";
+
+  const orderId = String(formData.get("orderId") ?? "");
+  const supabase = await createClient();
+
+  try {
+    await acceptOrderDelivery(supabase, orderId);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "验收失败";
+    redirect(
+      `/workspace/orders/${orderId}?error=${encodeURIComponent(message)}`,
+    );
+  }
+
+  redirect(`/workspace/orders/${orderId}?accepted=1`);
+}
+
+async function rejectDelivery(formData: FormData) {
+  "use server";
+
+  const orderId = String(formData.get("orderId") ?? "");
+  const reason = String(formData.get("reason") ?? "").trim();
+  const supabase = await createClient();
+
+  if (!reason) {
+    redirect(`/workspace/orders/${orderId}?error=${encodeURIComponent("请填写退回原因")}`);
+  }
+
+  try {
+    await rejectOrderDelivery(supabase, orderId, reason);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "退回交付失败";
+    redirect(
+      `/workspace/orders/${orderId}?error=${encodeURIComponent(message)}`,
+    );
+  }
+
+  redirect(`/workspace/orders/${orderId}?rejected=1`);
+}
+
+async function completeSettlement(formData: FormData) {
+  "use server";
+
+  const orderId = String(formData.get("orderId") ?? "");
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  try {
+    if (!user) {
+      throw new Error("请先登录");
+    }
+
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .select("customer_id")
+      .eq("id", orderId)
+      .single();
+
+    if (orderError) {
+      throw new Error(orderError.message);
+    }
+
+    if (order.customer_id !== user.id) {
+      throw new Error("只有订单客户可以完成模拟结算");
+    }
+
+    await completeAcceptedOrderWithMockSettlement(createServiceClient(), orderId);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "模拟结算失败";
+    redirect(
+      `/workspace/orders/${orderId}?error=${encodeURIComponent(message)}`,
+    );
+  }
+
+  redirect(`/workspace/orders/${orderId}?settled=1`);
+}
+
+async function submitReview(formData: FormData) {
+  "use server";
+
+  const orderId = String(formData.get("orderId") ?? "");
+  const rating = Number(formData.get("rating") ?? 0);
+  const body = String(formData.get("body") ?? "").trim();
+  const supabase = await createClient();
+
+  try {
+    await createOrderReview(supabase, orderId, {
+      body: body || null,
+      isPublic: true,
+      rating,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "提交评价失败";
+    redirect(
+      `/workspace/orders/${orderId}?error=${encodeURIComponent(message)}`,
+    );
+  }
+
+  redirect(`/workspace/orders/${orderId}?reviewed=1`);
+}
+
 export default async function OrderDetailPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
   searchParams: Promise<{
+    accepted?: string;
     delivery?: string;
     error?: string;
     message?: string;
+    rejected?: string;
+    reviewed?: string;
+    settled?: string;
   }>;
 }) {
   const { id } = await params;
@@ -103,26 +216,37 @@ export default async function OrderDetailPage({
     redirect("/workspace/settings");
   }
 
-  const [{ data: messages }, { data: attachments }, { data: deliveries }] =
-    await Promise.all([
-      supabase
-        .from("order_messages")
-        .select("id, body, sender_id, created_at")
-        .eq("order_id", id)
-        .order("created_at", { ascending: true }),
-      supabase
-        .from("order_attachments")
-        .select("id, file_name, storage_path, message_id, uploader_id, created_at")
-        .eq("order_id", id)
-        .order("created_at", { ascending: true }),
-      supabase
-        .from("deliveries")
-        .select("id, version, notes, delivery_url, is_current, created_at")
-        .eq("order_id", id)
-        .order("version", { ascending: false }),
-    ]);
+  const [
+    { data: messages },
+    { data: attachments },
+    { data: deliveries },
+    { data: existingReview },
+  ] = await Promise.all([
+    supabase
+      .from("order_messages")
+      .select("id, body, sender_id, created_at")
+      .eq("order_id", id)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("order_attachments")
+      .select("id, file_name, storage_path, message_id, uploader_id, created_at")
+      .eq("order_id", id)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("deliveries")
+      .select("id, version, notes, delivery_url, is_current, created_at")
+      .eq("order_id", id)
+      .order("version", { ascending: false }),
+    supabase
+      .from("reviews")
+      .select("id, rating, body")
+      .eq("order_id", id)
+      .eq("author_id", user.id)
+      .maybeSingle(),
+  ]);
 
   const isDeveloper = order.developer_id === user.id;
+  const isCustomer = order.customer_id === user.id;
 
   return (
     <div className="workspace-page">
@@ -139,6 +263,10 @@ export default async function OrderDetailPage({
       ) : null}
       {query.message ? <p className="auth-message">留言已发送。</p> : null}
       {query.delivery ? <p className="auth-message">交付已提交。</p> : null}
+      {query.accepted ? <p className="auth-message">已验收交付。</p> : null}
+      {query.rejected ? <p className="auth-message">已退回交付，订单回到进行中。</p> : null}
+      {query.settled ? <p className="auth-message">模拟结算已完成，订单已完成。</p> : null}
+      {query.reviewed ? <p className="auth-message">评价已提交。</p> : null}
 
       <Card className="settings-card">
         <span className="status-badge">{order.status}</span>
@@ -154,16 +282,8 @@ export default async function OrderDetailPage({
           <input name="orderId" type="hidden" value={order.id} />
           <label htmlFor="body">留言内容</label>
           <textarea id="body" name="body" required rows={4} />
-          <label htmlFor="attachmentName">附件名称（可选）</label>
-          <input id="attachmentName" name="attachmentName" placeholder="scope.pdf" />
-          <label htmlFor="attachmentPath">附件路径（可选）</label>
-          <input
-            id="attachmentPath"
-            name="attachmentPath"
-            placeholder={`orders/${order.id}/file.pdf`}
-          />
-          <input name="attachmentType" type="hidden" value="application/pdf" />
-          <input name="attachmentSize" type="hidden" value="0" />
+          <label>附件（可选）</label>
+          <OrderFileUpload orderId={order.id} />
           <Button type="submit">发送留言</Button>
         </form>
       </Card>
@@ -181,14 +301,66 @@ export default async function OrderDetailPage({
               name="deliveryUrl"
               placeholder="https://example.com/release"
             />
-            <label htmlFor="deliveryAttachmentName">附件名称（可选）</label>
-            <input id="deliveryAttachmentName" name="attachmentName" />
-            <label htmlFor="deliveryAttachmentPath">附件路径（可选）</label>
-            <input id="deliveryAttachmentPath" name="attachmentPath" />
-            <input name="attachmentType" type="hidden" value="application/zip" />
-            <input name="attachmentSize" type="hidden" value="0" />
+            <label>交付附件（可选）</label>
+            <OrderFileUpload orderId={order.id} />
             <Button type="submit">提交正式交付</Button>
           </form>
+        </Card>
+      ) : null}
+
+      {isCustomer && order.status === "delivered" ? (
+        <Card className="settings-card">
+          <h2>验收交付</h2>
+          <p>确认交付物符合需求即可验收；如不符合要求，可填写原因退回开发者修改。</p>
+          <form action={acceptDelivery} className="auth-form">
+            <input name="orderId" type="hidden" value={order.id} />
+            <Button type="submit">验收交付</Button>
+          </form>
+          <form action={rejectDelivery} className="auth-form">
+            <input name="orderId" type="hidden" value={order.id} />
+            <label htmlFor="reject-reason">退回原因</label>
+            <textarea id="reject-reason" name="reason" required rows={3} />
+            <Button type="submit" variant="secondary">
+              退回交付
+            </Button>
+          </form>
+        </Card>
+      ) : null}
+
+      {isCustomer && order.status === "accepted" ? (
+        <Card className="settings-card">
+          <h2>完成结算</h2>
+          <p>当前为本地模拟结算，不产生真实分账或资金流转。结算完成后可对开发者评价。</p>
+          <form action={completeSettlement} className="auth-form">
+            <input name="orderId" type="hidden" value={order.id} />
+            <Button type="submit">完成结算（模拟）</Button>
+          </form>
+        </Card>
+      ) : null}
+
+      {isCustomer && order.status === "completed" ? (
+        <Card className="settings-card">
+          <h2>评价开发者</h2>
+          {existingReview ? (
+            <p className="auth-message">
+              已提交评价：{existingReview.rating} 星。
+            </p>
+          ) : (
+            <form action={submitReview} className="auth-form">
+              <input name="orderId" type="hidden" value={order.id} />
+              <label htmlFor="rating">评分（1-5）</label>
+              <select defaultValue="5" id="rating" name="rating">
+                <option value="5">5 星 · 非常满意</option>
+                <option value="4">4 星 · 满意</option>
+                <option value="3">3 星 · 一般</option>
+                <option value="2">2 星 · 不满意</option>
+                <option value="1">1 星 · 很不满意</option>
+              </select>
+              <label htmlFor="review-body">评价内容（可选）</label>
+              <textarea id="review-body" name="body" rows={3} />
+              <Button type="submit">提交评价</Button>
+            </form>
+          )}
         </Card>
       ) : null}
 
@@ -235,7 +407,17 @@ export default async function OrderDetailPage({
             {attachments.map((attachment) => (
               <article className="message-preview" key={attachment.id}>
                 <strong>{attachment.file_name}</strong>
-                <p>{attachment.storage_path}</p>
+                <p>
+                  <a
+                    href={`/api/files/download?orderId=${order.id}&path=${encodeURIComponent(
+                      attachment.storage_path,
+                    )}`}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    下载附件
+                  </a>
+                </p>
               </article>
             ))}
           </div>
