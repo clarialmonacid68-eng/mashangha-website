@@ -200,4 +200,52 @@ describeWithDatabase("quote selection", () => {
       .single();
     expect(matchedDemand?.status).toBe("matched");
   });
+
+  it("blocks a developer from directly setting their quote to selected via RLS", async () => {
+    const demand = await createPublishedDemand();
+    const quote = await createQuote(developerA, demand.id, {
+      amountCents: 500_000,
+      deliveryDays: 14,
+      expiresAt: new Date(Date.now() + 86400_000).toISOString(),
+      proposal: "尝试绕过 RPC 直接把报价状态改成 selected。",
+    });
+
+    const { error } = await developerA
+      .from("quotes")
+      .update({ status: "selected" })
+      .eq("id", quote.id);
+
+    expect(error).not.toBeNull();
+
+    const { data: unchanged } = await admin
+      .from("quotes")
+      .select("status")
+      .eq("id", quote.id)
+      .single();
+    expect(unchanged?.status).toBe("active");
+  });
+
+  it("allows a developer to withdraw their own active quote", async () => {
+    const demand = await createPublishedDemand();
+    const quote = await createQuote(developerA, demand.id, {
+      amountCents: 500_000,
+      deliveryDays: 14,
+      expiresAt: new Date(Date.now() + 86400_000).toISOString(),
+      proposal: "开发者撤回自己的有效报价，这是唯一允许的直接更新路径。",
+    });
+
+    const { error } = await developerA
+      .from("quotes")
+      .update({ status: "withdrawn" })
+      .eq("id", quote.id);
+
+    expect(error).toBeNull();
+
+    const { data: withdrawn } = await admin
+      .from("quotes")
+      .select("status")
+      .eq("id", quote.id)
+      .single();
+    expect(withdrawn?.status).toBe("withdrawn");
+  });
 });
