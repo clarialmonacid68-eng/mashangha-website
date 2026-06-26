@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { reviewDemand, setDemandSuspension } from "@/lib/domain/admin/governance";
+import { listAdminDemands } from "@/lib/domain/admin/queries";
 import { createServiceClient } from "@/lib/auth/server";
 import { requireAdmin } from "@/lib/security/audit";
 
@@ -57,14 +58,7 @@ export default async function AdminDemandsPage({
 }) {
   await requireAdmin();
   const query = await searchParams;
-  const service = createServiceClient();
-  const { data: demands } = await service
-    .from("demands")
-    .select(
-      "id, title, description, status, review_notes, is_suspended, customer_id, created_at",
-    )
-    .order("created_at", { ascending: false })
-    .limit(50);
+  const demands = await listAdminDemands(createServiceClient());
 
   return (
     <main className="workspace-page application-shell-admin">

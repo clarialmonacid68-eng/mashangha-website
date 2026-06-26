@@ -7,6 +7,7 @@ import {
   reviewProduct,
   setProductSuspension,
 } from "@/lib/domain/admin/governance";
+import { listAdminProducts } from "@/lib/domain/admin/queries";
 import { productCategoryLabels } from "@/lib/domain/products/schema";
 import { createServiceClient } from "@/lib/auth/server";
 import { requireAdmin } from "@/lib/security/audit";
@@ -70,14 +71,7 @@ export default async function AdminProductsPage({
 }) {
   await requireAdmin();
   const query = await searchParams;
-  const service = createServiceClient();
-  const { data: products } = await service
-    .from("products")
-    .select(
-      "id, title, summary, category, price_cents, status, review_notes, is_suspended, seller_id, created_at",
-    )
-    .order("created_at", { ascending: false })
-    .limit(50);
+  const products = await listAdminProducts(createServiceClient());
 
   return (
     <main className="workspace-page application-shell-admin">

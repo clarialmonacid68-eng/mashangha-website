@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { setOrderFrozen } from "@/lib/domain/admin/governance";
+import { listAdminOrders } from "@/lib/domain/admin/queries";
 import { executeOrderRefund } from "@/lib/domain/refunds/service";
 import { MockPaymentProvider } from "@/lib/payments/mock-provider";
 import { createServiceClient } from "@/lib/auth/server";
@@ -64,14 +65,7 @@ export default async function AdminOrdersPage({
 }) {
   await requireAdmin();
   const query = await searchParams;
-  const service = createServiceClient();
-  const { data: orders } = await service
-    .from("orders")
-    .select(
-      "id, status, amount_cents, customer_id, developer_id, paid_at, is_frozen, created_at",
-    )
-    .order("created_at", { ascending: false })
-    .limit(50);
+  const orders = await listAdminOrders(createServiceClient());
 
   return (
     <main className="workspace-page application-shell-admin">

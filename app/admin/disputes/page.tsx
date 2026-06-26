@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { resolveDisputeByDecision } from "@/lib/domain/disputes/service";
+import { listAdminDisputes } from "@/lib/domain/admin/queries";
 import { createServiceClient } from "@/lib/auth/server";
 import { requireAdmin } from "@/lib/security/audit";
 
@@ -33,14 +34,7 @@ export default async function AdminDisputesPage({
 }) {
   await requireAdmin();
   const query = await searchParams;
-  const service = createServiceClient();
-  const { data: disputes } = await service
-    .from("disputes")
-    .select(
-      "id, order_id, status, reason, requested_resolution, resolution_notes, opened_by, created_at",
-    )
-    .order("created_at", { ascending: false })
-    .limit(50);
+  const disputes = await listAdminDisputes(createServiceClient());
 
   return (
     <main className="workspace-page application-shell-admin">
