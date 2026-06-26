@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { Card } from "@/components/ui/card";
+import { demandProjectTypeLabels } from "@/lib/domain/demands/schema";
+import { getPublishedDemandDetail } from "@/lib/domain/demands/service";
 import { createClient } from "@/lib/auth/server";
 
 const currency = new Intl.NumberFormat("zh-CN", {
@@ -31,15 +33,7 @@ export default async function DemandDetailPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
-  const { data: demand } = await supabase
-    .from("demands")
-    .select(
-      "title, description, project_type, cooperation_mode, budget_min_cents, budget_max_cents, expected_delivery_days, published_at",
-    )
-    .eq("id", id)
-    .eq("status", "published")
-    .eq("is_suspended", false)
-    .maybeSingle();
+  const demand = await getPublishedDemandDetail(supabase, id);
 
   if (!demand) {
     notFound();
@@ -52,7 +46,12 @@ export default async function DemandDetailPage({
         <h1>{demand.title}</h1>
         <p>{demand.description}</p>
         <div className="profile-summary">
-          <p>项目类型：{demand.project_type}</p>
+          <p>
+            项目类型：
+            {demandProjectTypeLabels[
+              demand.project_type as keyof typeof demandProjectTypeLabels
+            ] ?? demand.project_type}
+          </p>
           <p>合作方式：{demand.cooperation_mode}</p>
           <p>
             预算：

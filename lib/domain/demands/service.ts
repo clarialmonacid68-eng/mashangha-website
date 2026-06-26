@@ -220,3 +220,30 @@ export async function listPublishedDemands(
 
   return data ?? [];
 }
+
+/**
+ * Read a single demand for the public marketing detail page. Owns the public
+ * visibility rule: only published, non-suspended demands are returned. Returns
+ * null when the demand does not exist or is not publicly visible, so the page
+ * can render notFound().
+ */
+export async function getPublishedDemandDetail(
+  supabase: SupabaseClient,
+  demandId: string,
+) {
+  const { data, error } = await supabase
+    .from("demands")
+    .select(
+      "title, description, project_type, cooperation_mode, budget_min_cents, budget_max_cents, expected_delivery_days, published_at",
+    )
+    .eq("id", demandId)
+    .eq("status", "published")
+    .eq("is_suspended", false)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}

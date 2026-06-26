@@ -2,112 +2,39 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  cooperationModes,
-  demandProjectTypes,
-  type DemandInput,
-} from "@/lib/domain/demands/schema";
-import {
-  createDemandDraft,
-  submitDemandForReview,
-} from "@/lib/domain/demands/service";
+import { demandProjectTypes } from "@/lib/domain/demands/schema";
+import { createAndSubmitDemandFromForm } from "@/lib/domain/demands/form";
 import { createClient } from "@/lib/auth/server";
 
-function parseBudget(value: FormDataEntryValue | null) {
-  const amount = Number(value);
-  return Number.isFinite(amount) ? Math.round(amount * 100) : null;
-}
-
-function parsePositiveInteger(value: FormDataEntryValue | null) {
-  const amount = Number(value);
-  return Number.isInteger(amount) && amount > 0 ? amount : null;
-}
-
-function parseProjectType(
-  value: FormDataEntryValue | null,
-): DemandInput["projectType"] | null {
-  return demandProjectTypes.includes(
-    value as (typeof demandProjectTypes)[number],
-  )
-    ? (value as DemandInput["projectType"])
-    : null;
-}
-
-function parseCooperationMode(
-  value: FormDataEntryValue | null,
-): DemandInput["cooperationMode"] | null {
-  return cooperationModes.includes(value as (typeof cooperationModes)[number])
-    ? (value as DemandInput["cooperationMode"])
-    : null;
-}
-
-function parseAttachment(formData: FormData) {
-  const storagePath = String(formData.get("attachmentPath") ?? "").trim();
-  const fileName = String(formData.get("attachmentName") ?? "").trim();
-
-  if (!storagePath || !fileName) {
-    return [];
-  }
-
-  return [
-    {
-      contentType: null,
-      fileName,
-      sizeBytes: 0,
-      storagePath,
-    },
-  ];
-}
-
+// Thin server-action adapter: extract raw form fields, delegate all parsing,
+// validation, draft creation and review submission to the domain layer, then
+// map the typed result to a redirect.
 async function createDraftDemand(formData: FormData) {
   "use server";
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const result = await createAndSubmitDemandFromForm(supabase, {
+    attachmentName: formData.get("attachmentName")?.toString() ?? null,
+    attachmentPath: formData.get("attachmentPath")?.toString() ?? null,
+    budgetMax: formData.get("budgetMax")?.toString() ?? null,
+    budgetMin: formData.get("budgetMin")?.toString() ?? null,
+    cooperationMode: formData.get("cooperationMode")?.toString() ?? null,
+    description: formData.get("description")?.toString() ?? null,
+    expectedDeliveryDays:
+      formData.get("expectedDeliveryDays")?.toString() ?? null,
+    projectType: formData.get("projectType")?.toString() ?? null,
+    title: formData.get("title")?.toString() ?? null,
+  });
 
-  if (!user) {
-    redirect("/login");
-  }
-
-  const title = String(formData.get("title") ?? "").trim();
-  const projectType = parseProjectType(formData.get("projectType"));
-  const description = String(formData.get("description") ?? "").trim();
-  const budgetMinCents = parseBudget(formData.get("budgetMin"));
-  const budgetMaxCents = parseBudget(formData.get("budgetMax"));
-  const expectedDeliveryDays = parsePositiveInteger(
-    formData.get("expectedDeliveryDays"),
-  );
-  const cooperationMode = parseCooperationMode(formData.get("cooperationMode"));
-
-  if (
-    title.length < 4 ||
-    description.length < 20 ||
-    budgetMinCents === null ||
-    budgetMaxCents === null ||
-    budgetMaxCents < budgetMinCents ||
-    expectedDeliveryDays === null ||
-    projectType === null ||
-    cooperationMode === null
-  ) {
-    redirect("/workspace/customer/demands/new?error=invalid");
-  }
-
-  try {
-    const demand = await createDemandDraft(supabase, {
-      attachments: parseAttachment(formData),
-      budgetMaxCents,
-      budgetMinCents,
-      cooperationMode,
-      description,
-      expectedDeliveryDays,
-      projectType,
-      title,
-    });
-    await submitDemandForReview(supabase, demand.id);
-  } catch {
-    redirect("/workspace/customer/demands/new?error=create_failed");
+  if (!result.ok) {
+    if (result.reason === "unauthenticated") {
+      redirect("/login");
+    }
+    redirect(
+      `/workspace/customer/demands/new?error=${
+        result.reason === "invalid" ? "invalid" : "create_failed"
+      }`,
+    );
   }
 
   redirect("/workspace/customer/demands/new?submitted=1");
@@ -116,9 +43,22 @@ async function createDraftDemand(formData: FormData) {
 export default async function NewDemandPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; saved?: string; submitted?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    saved?: string;
+    submitted?: string;
+    title?: string;
+    type?: string;
+  }>;
 }) {
   const params = await searchParams;
+  // UI default only: pre-select the project type when a valid one is passed in
+  // the query string (e.g. the digital-employee entry).
+  const presetProjectType = demandProjectTypes.includes(
+    (params.type ?? "") as (typeof demandProjectTypes)[number],
+  )
+    ? (params.type as (typeof demandProjectTypes)[number])
+    : "ai_app";
 
   return (
     <div className="workspace-page">
@@ -148,6 +88,7 @@ export default async function NewDemandPage({
         <form action={createDraftDemand} className="auth-form demand-form">
           <label htmlFor="title">需求标题</label>
           <input
+            defaultValue={params.title ?? ""}
             id="title"
             maxLength={120}
             minLength={4}
@@ -157,8 +98,14 @@ export default async function NewDemandPage({
           />
 
           <label htmlFor="projectType">项目类型</label>
-          <select id="projectType" name="projectType" required>
+          <select
+            defaultValue={presetProjectType}
+            id="projectType"
+            name="projectType"
+            required
+          >
             <option value="ai_app">AI 应用</option>
+            <option value="digital_employee">数字员工定制</option>
             <option value="mini_program">小程序</option>
             <option value="website">网站建设</option>
             <option value="automation">自动化工具</option>
