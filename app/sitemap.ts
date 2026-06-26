@@ -5,6 +5,8 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.mshcode.com";
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     "",
+    "/digital-employees",
+    "/products",
     "/demands",
     "/developers",
     "/rules/service",

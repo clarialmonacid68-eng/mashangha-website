@@ -1012,6 +1012,150 @@ export type Database = {
           },
         ]
       }
+      products: {
+        Row: {
+          category: string
+          created_at: string
+          delivery_type: string
+          description: string
+          id: string
+          is_suspended: boolean
+          price_cents: number
+          published_at: string | null
+          review_notes: string | null
+          seller_id: string
+          status: Database["public"]["Enums"]["product_status"]
+          summary: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          delivery_type?: string
+          description: string
+          id?: string
+          is_suspended?: boolean
+          price_cents: number
+          published_at?: string | null
+          review_notes?: string | null
+          seller_id: string
+          status?: Database["public"]["Enums"]["product_status"]
+          summary: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          delivery_type?: string
+          description?: string
+          id?: string
+          is_suspended?: boolean
+          price_cents?: number
+          published_at?: string | null
+          review_notes?: string | null
+          seller_id?: string
+          status?: Database["public"]["Enums"]["product_status"]
+          summary?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_seller_id_fkey"
+            columns: ["seller_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_secrets: {
+        Row: {
+          payload: string
+          product_id: string
+          updated_at: string
+        }
+        Insert: {
+          payload: string
+          product_id: string
+          updated_at?: string
+        }
+        Update: {
+          payload?: string
+          product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_secrets_product_id_fkey"
+            columns: ["product_id"]
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_purchases: {
+        Row: {
+          amount_cents: number
+          buyer_id: string
+          commission_bps: number
+          created_at: string
+          delivered_payload: string | null
+          id: string
+          paid_at: string | null
+          platform_purchase_no: string
+          product_id: string
+          seller_id: string
+          status: string
+        }
+        Insert: {
+          amount_cents: number
+          buyer_id: string
+          commission_bps?: number
+          created_at?: string
+          delivered_payload?: string | null
+          id?: string
+          paid_at?: string | null
+          platform_purchase_no: string
+          product_id: string
+          seller_id: string
+          status?: string
+        }
+        Update: {
+          amount_cents?: number
+          buyer_id?: string
+          commission_bps?: number
+          created_at?: string
+          delivered_payload?: string | null
+          id?: string
+          paid_at?: string | null
+          platform_purchase_no?: string
+          product_id?: string
+          seller_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_purchases_product_id_fkey"
+            columns: ["product_id"]
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_purchases_buyer_id_fkey"
+            columns: ["buyer_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_purchases_seller_id_fkey"
+            columns: ["seller_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1043,6 +1187,14 @@ export type Database = {
         }
       }
       apply_for_developer: { Args: never; Returns: undefined }
+      purchase_product: {
+        Args: { target_product_id: string }
+        Returns: Database["public"]["Tables"]["product_purchases"]["Row"]
+      }
+      confirm_product_purchase: {
+        Args: { purchase_id: string }
+        Returns: Database["public"]["Tables"]["product_purchases"]["Row"]
+      }
       close_demand: {
         Args: { demand_id: string }
         Returns: {
@@ -1272,6 +1424,12 @@ export type Database = {
         | "disputed"
         | "share_failed"
       payment_status: "created" | "pending" | "succeeded" | "closed" | "failed"
+      product_status:
+        | "draft"
+        | "pending_review"
+        | "published"
+        | "rejected"
+        | "delisted"
       quote_status: "active" | "selected" | "withdrawn" | "expired" | "rejected"
       refund_status:
         | "requested"

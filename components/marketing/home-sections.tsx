@@ -8,6 +8,46 @@ const steps = [
   ["04", "交付验收", "在订单中接收交付物，选择验收或发起争议处理。"],
 ];
 
+const digitalEmployees = [
+  ["AI 客服员工", "接待咨询、回答产品问题、收集线索并转交人工。"],
+  ["AI 销售助理", "跟进意向客户、整理沟通记录、生成跟进提醒。"],
+  ["AI 运营助手", "生成内容初稿、汇总数据、产出日报周报。"],
+  ["AI 数据处理员", "从单据、表格、邮件中抽取结构化数据并入库。"],
+];
+
+const entries: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  href: string;
+  cta: string;
+}[] = [
+  {
+    eyebrow: "找开发者定制",
+    title: "雇佣 AI 开发者",
+    description:
+      "发布软件、小程序、网站需求，由认证开发者报价并定制开发，全过程在订单内留痕。",
+    href: "/workspace/customer/demands/new",
+    cta: "发布开发需求",
+  },
+  {
+    eyebrow: "按岗位定制",
+    title: "定制 AI 数字员工",
+    description:
+      "定制你的 AI 销售员工、AI 客服员工、AI 运营员工等，由认证开发者按业务实现。",
+    href: "/digital-employees",
+    cta: "了解数字员工",
+  },
+  {
+    eyebrow: "即买即用",
+    title: "AI 应用市场",
+    description:
+      "选购开发者上架、经平台审核的现成 AI 应用与工具，付款后获取授权码或访问链接。",
+    href: "/products",
+    cta: "逛 AI 应用市场",
+  },
+];
+
 export function HomeSections() {
   return (
     <main>
@@ -58,6 +98,26 @@ export function HomeSections() {
         </Card>
       </section>
 
+      <section className="content-section" id="entries">
+        <div className="section-heading">
+          <div>
+            <span className="eyebrow">三种主流方式</span>
+            <h2>无论定制还是即用，都能在这里开始</h2>
+          </div>
+          <p>找开发者定制、按岗位定制数字员工，或直接选购现成 AI 应用。</p>
+        </div>
+        <div className="step-grid">
+          {entries.map((entry) => (
+            <Card className="step-card" key={entry.title}>
+              <span className="eyebrow">{entry.eyebrow}</span>
+              <h3>{entry.title}</h3>
+              <p>{entry.description}</p>
+              <Button href={entry.href}>{entry.cta}</Button>
+            </Card>
+          ))}
+        </div>
+      </section>
+
       <section className="content-section" id="how-it-works">
         <div className="section-heading">
           <div>
@@ -74,6 +134,35 @@ export function HomeSections() {
               <p>{description}</p>
             </Card>
           ))}
+        </div>
+      </section>
+
+      <section className="content-section" id="digital-employees">
+        <div className="section-heading">
+          <div>
+            <span className="eyebrow">定制数字员工</span>
+            <h2>把重复工作交给定制的数字员工</h2>
+          </div>
+          <p>
+            描述你想要的岗位，由认证开发者按业务定制实现，仍走需求审核、报价、下单和交付验收流程。
+          </p>
+        </div>
+        <div className="step-grid">
+          {digitalEmployees.map(([name, description]) => (
+            <Card className="step-card" key={name}>
+              <h3>{name}</h3>
+              <p>{description}</p>
+            </Card>
+          ))}
+        </div>
+        <div className="hero-actions">
+          <Button href="/digital-employees">了解定制数字员工</Button>
+          <Button
+            href="/workspace/customer/demands/new?type=digital_employee"
+            variant="secondary"
+          >
+            直接定制
+          </Button>
         </div>
       </section>
 

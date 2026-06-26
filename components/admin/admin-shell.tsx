@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 const adminLinks = [
   { href: "/admin", label: "数据概览" },
   { href: "/admin/reviews", label: "审核中心" },
+  { href: "/admin/products", label: "应用市场" },
   { href: "/admin/orders", label: "订单管理" },
   { href: "/admin/disputes", label: "仲裁管理" },
   { href: "/admin/audit", label: "操作日志" },

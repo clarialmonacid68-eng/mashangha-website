@@ -5,11 +5,24 @@ const requiredText = (message: string, min = 1) =>
 
 export const demandProjectTypes = [
   "ai_app",
+  "digital_employee",
   "mini_program",
   "website",
   "automation",
   "other",
 ] as const;
+
+export const demandProjectTypeLabels: Record<
+  (typeof demandProjectTypes)[number],
+  string
+> = {
+  ai_app: "AI 应用",
+  digital_employee: "数字员工定制",
+  mini_program: "小程序",
+  website: "网站建设",
+  automation: "自动化工具",
+  other: "其他",
+};
 
 export const cooperationModes = [
   "fixed_scope",

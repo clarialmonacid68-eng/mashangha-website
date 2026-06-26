@@ -79,6 +79,7 @@ export default async function DemandsPage({
         <select defaultValue={params.projectType ?? ""} name="projectType">
           <option value="">全部类型</option>
           <option value="ai_app">AI 应用</option>
+          <option value="digital_employee">数字员工定制</option>
           <option value="mini_program">小程序</option>
           <option value="website">网站建设</option>
           <option value="automation">自动化工具</option>

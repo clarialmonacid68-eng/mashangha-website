@@ -855,6 +855,17 @@ a:focus-visible {
   margin: 0;
 }
 
+.site-footer-compliance {
+  display: grid;
+  gap: 8px;
+  color: rgb(255 255 255 / 68%);
+  font-size: 13px;
+}
+
+.site-footer-compliance a:hover {
+  color: white;
+}
+
 .status-badge {
   display: inline-flex;
   align-items: center;

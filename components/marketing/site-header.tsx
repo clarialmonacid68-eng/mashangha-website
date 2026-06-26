@@ -3,9 +3,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 const navigation = [
+  { href: "/digital-employees", label: "数字员工" },
+  { href: "/products", label: "AI 应用市场" },
   { href: "/demands", label: "需求市场" },
   { href: "/developers", label: "开发者市场" },
-  { href: "/#how-it-works", label: "如何运作" },
   { href: "/workspace/settings", label: "开发者入驻" },
 ];
 
