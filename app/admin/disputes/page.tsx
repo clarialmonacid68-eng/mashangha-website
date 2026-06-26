@@ -3,11 +3,7 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  resolveDisputeAsAccept,
-  resolveDisputeAsContinue,
-  resolveDisputeAsFullRefund,
-} from "@/lib/domain/disputes/service";
+import { resolveDisputeByDecision } from "@/lib/domain/disputes/service";
 import { createServiceClient } from "@/lib/auth/server";
 import { requireAdmin } from "@/lib/security/audit";
 
@@ -15,36 +11,19 @@ async function ruleDispute(formData: FormData) {
   "use server";
 
   const admin = await requireAdmin();
-  const disputeId = String(formData.get("disputeId") ?? "");
-  const decision = String(formData.get("decision") ?? "");
-  const notes = String(formData.get("notes") ?? "").trim();
+  const result = await resolveDisputeByDecision(createServiceClient(), {
+    adminId: admin.id,
+    decision: String(formData.get("decision") ?? ""),
+    disputeId: String(formData.get("disputeId") ?? ""),
+    notes: String(formData.get("notes") ?? ""),
+  });
 
-  if (
-    !disputeId ||
-    !notes ||
-    !["continue", "accept", "refund"].includes(decision)
-  ) {
+  if (!result.ok) {
     redirect("/admin/disputes?error=missing_note");
   }
 
-  const service = createServiceClient();
-
-  if (decision === "continue") {
-    await resolveDisputeAsContinue(service, disputeId, {
-      adminId: admin.id,
-      notes,
-    });
-  } else if (decision === "accept") {
-    await resolveDisputeAsAccept(service, disputeId, { adminId: admin.id, notes });
-  } else {
-    await resolveDisputeAsFullRefund(service, disputeId, {
-      adminId: admin.id,
-      notes,
-    });
-  }
-
   revalidatePath("/admin/disputes");
-  redirect(`/admin/disputes?resolved=${disputeId}`);
+  redirect(`/admin/disputes?resolved=${result.disputeId}`);
 }
 
 export default async function AdminDisputesPage({

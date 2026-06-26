@@ -297,3 +297,48 @@ export async function resolveDisputeAsFullRefund(
 
   return { dispute, order };
 }
+
+export type DisputeDecision = "continue" | "accept" | "refund";
+
+export type ResolveDisputeResult =
+  | { disputeId: string; ok: true }
+  | { ok: false; reason: "invalid" };
+
+/**
+ * Route an admin dispute ruling to the correct resolution. Owns the
+ * decision → action mapping and input validation that previously lived inline
+ * in the admin page; returns a typed result so the page only maps it to a
+ * redirect.
+ */
+export async function resolveDisputeByDecision(
+  supabase: SupabaseClient,
+  input: {
+    adminId: string;
+    decision: string;
+    disputeId: string;
+    notes: string;
+  },
+): Promise<ResolveDisputeResult> {
+  const notes = input.notes.trim();
+  const decisions: DisputeDecision[] = ["continue", "accept", "refund"];
+
+  if (
+    !input.disputeId ||
+    !notes ||
+    !decisions.includes(input.decision as DisputeDecision)
+  ) {
+    return { ok: false, reason: "invalid" };
+  }
+
+  const resolveInput = { adminId: input.adminId, notes };
+
+  if (input.decision === "continue") {
+    await resolveDisputeAsContinue(supabase, input.disputeId, resolveInput);
+  } else if (input.decision === "accept") {
+    await resolveDisputeAsAccept(supabase, input.disputeId, resolveInput);
+  } else {
+    await resolveDisputeAsFullRefund(supabase, input.disputeId, resolveInput);
+  }
+
+  return { disputeId: input.disputeId, ok: true };
+}
