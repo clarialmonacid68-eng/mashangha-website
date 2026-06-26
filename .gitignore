@@ -2,6 +2,7 @@
 .superpowers/
 .worktrees/
 node_modules/
+.pnpm-store/
 .next/
 coverage/
 playwright-report/
@@ -9,3 +10,7 @@ test-results/
 *.tsbuildinfo
 .env
 .env.local
+.env.production
+
+.claude/
+__pycache__/

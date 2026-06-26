@@ -6,7 +6,15 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: "jsdom",
-    exclude: [...configDefaults.exclude, "tests/e2e/**"],
+    exclude: [
+      ...configDefaults.exclude,
+      "tests/e2e/**",
+      "**/tests/e2e/**",
+      ".worktrees/**",
+      ".pnpm-store/**",
+      "playwright-report/**",
+      "test-results/**",
+    ],
     setupFiles: ["./tests/setup.ts"],
   },
   resolve: {
