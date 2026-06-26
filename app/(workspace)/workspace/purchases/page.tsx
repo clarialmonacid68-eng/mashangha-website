@@ -2,7 +2,10 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { confirmProductPurchase } from "@/lib/domain/products/service";
+import {
+  confirmProductPurchase,
+  listBuyerPurchases,
+} from "@/lib/domain/products/service";
 import { createClient } from "@/lib/auth/server";
 
 const currency = new Intl.NumberFormat("zh-CN", {
@@ -42,13 +45,7 @@ export default async function PurchasesPage({
     redirect("/login");
   }
 
-  const { data: purchases } = await supabase
-    .from("product_purchases")
-    .select(
-      "id, product_id, amount_cents, status, delivered_payload, created_at, products(title)",
-    )
-    .eq("buyer_id", user.id)
-    .order("created_at", { ascending: false });
+  const purchases = await listBuyerPurchases(supabase);
 
   return (
     <div className="workspace-page">
