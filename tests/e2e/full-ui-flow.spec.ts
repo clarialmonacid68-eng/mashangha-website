@@ -1,14 +1,7 @@
-import {
-  expect,
-  test,
-  type APIRequestContext,
-  type Page,
-} from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { approveDeveloper, createAdminClient } from "./marketplace-flow-helpers";
-
-const MAILPIT_BASE = "http://127.0.0.1:54324";
 
 /**
  * Full click-through UI smoke test for the phase-one transaction loop.
@@ -18,17 +11,19 @@ const MAILPIT_BASE = "http://127.0.0.1:54324";
  *   客户登录 -> 发布需求 -> 管理员审核发布 -> 开发者报价 -> 客户选标
  *   -> 页面创建并确认模拟支付 -> 开发者交付 -> 客户验收 -> 模拟结算 -> 评价
  *
- * Authentication uses the real email magic-link flow via the local Mailpit
- * inbox (port 54324), the same mechanism exercised by auth.spec.ts.
+ * Authentication uses the email + password login UI (signInWithPassword).
  *
  * Requires a running local Supabase stack and `pnpm dev`, with Supabase env
  * exported (SUPABASE_URL / ANON / SERVICE_ROLE keys).
  */
 
+const PASSWORD = "Test-Password-Aa1!";
+
 async function createConfirmedUser(admin: SupabaseClient, label: string) {
   const email = `uie2e-${label}-${crypto.randomUUID()}@example.com`;
   const { data, error } = await admin.auth.admin.createUser({
     email,
+    password: PASSWORD,
     email_confirm: true,
   });
   expect(error).toBeNull();
@@ -43,57 +38,18 @@ async function grantAdminRole(admin: SupabaseClient, userId: string) {
   expect(error).toBeNull();
 }
 
-/** Drive the real email magic-link login UI and land in the workspace. */
-async function loginWithMagicLink(
-  page: Page,
-  request: APIRequestContext,
-  email: string,
-) {
+/** Drive the email + password login UI and land in the workspace. */
+async function loginWithPassword(page: Page, email: string) {
   await page.goto("/login");
-  await page.getByRole("tab", { name: "邮箱登录" }).click();
   await page.getByLabel("邮箱地址").fill(email);
-  await page.getByRole("button", { name: "发送登录链接" }).click();
-  await expect(page.getByText("登录链接已发送")).toBeVisible();
-
-  let messageId: string | undefined;
-  await expect
-    .poll(
-      async () => {
-        const response = await request.get(`${MAILPIT_BASE}/api/v1/messages`);
-        const payload = (await response.json()) as {
-          messages: Array<{ ID: string; To: Array<{ Address: string }> }>;
-        };
-        const message = payload.messages.find((item) =>
-          item.To.some(({ Address }) => Address === email),
-        );
-        messageId = message?.ID;
-        return Boolean(messageId);
-      },
-      { timeout: 15_000 },
-    )
-    .toBe(true);
-
-  const messageResponse = await request.get(
-    `${MAILPIT_BASE}/api/v1/message/${messageId}`,
-  );
-  const message = (await messageResponse.json()) as {
-    HTML: string;
-    Text: string;
-  };
-  const content = `${message.Text}\n${message.HTML}`;
-  const magicLink = content
-    .match(/https?:\/\/[^\s"'<>]+\/auth\/v1\/verify[^\s"'<>]+/)?.[0]
-    .replaceAll("&amp;", "&");
-
-  expect(magicLink).toBeTruthy();
-  await page.goto(magicLink!);
+  await page.getByLabel("密码").fill(PASSWORD);
+  await page.getByRole("button", { name: "登录" }).click();
   await expect(page).toHaveURL(/\/workspace\//);
 }
 
 test("full transaction loop is completable entirely through the UI", async ({
   browser,
   baseURL,
-  request,
 }) => {
   test.setTimeout(120_000);
 
@@ -116,7 +72,7 @@ test("full transaction loop is completable entirely through the UI", async ({
 
   try {
     // 1) Customer logs in and publishes a demand for review.
-    await loginWithMagicLink(customerPage, request, customer.email);
+    await loginWithPassword(customerPage, customer.email);
     await customerPage.goto("/workspace/customer/demands/new");
     await expect(
       customerPage.getByRole("heading", { name: "发布开发需求" }),
@@ -141,7 +97,7 @@ test("full transaction loop is completable entirely through the UI", async ({
     const demandId = demandRow!.id as string;
 
     // 2) Admin reviews and publishes the demand through the admin console.
-    await loginWithMagicLink(adminPage, request, operator.email);
+    await loginWithPassword(adminPage, operator.email);
     await adminPage.goto("/admin/demands");
     const adminCard = adminPage.locator(".settings-card", { hasText: title });
     await expect(adminCard).toBeVisible();
@@ -152,7 +108,7 @@ test("full transaction loop is completable entirely through the UI", async ({
     await expect(adminPage.getByText("已审核需求：")).toBeVisible();
 
     // 3) Developer logs in and submits a quote on the published demand.
-    await loginWithMagicLink(developerPage, request, developer.email);
+    await loginWithPassword(developerPage, developer.email);
     await developerPage.goto("/workspace/developer/demands");
     const devCard = developerPage.locator(".settings-card", { hasText: title });
     await expect(devCard).toBeVisible();

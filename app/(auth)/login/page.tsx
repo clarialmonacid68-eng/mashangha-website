@@ -7,11 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { createClient } from "@/lib/auth/client";
 
-type LoginMethod = "phone" | "email";
-
 export default function LoginPage() {
-  const [method, setMethod] = useState<LoginMethod>("phone");
-  const [value, setValue] = useState("+86");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
 
@@ -20,34 +18,19 @@ export default function LoginPage() {
     setPending(true);
     setMessage("");
 
-    const supabase = createClient();
-    const redirectTo = `${window.location.origin}/auth/callback`;
-
-    const result =
-      method === "email"
-        ? await supabase.auth.signInWithOtp({
-            email: value.trim(),
-            options: { emailRedirectTo: redirectTo },
-          })
-        : await supabase.auth.signInWithOtp({
-            phone: value.trim(),
-          });
+    const { error } = await createClient().auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
 
     setPending(false);
 
-    if (result.error) {
-      setMessage(result.error.message);
+    if (error) {
+      setMessage("邮箱或密码不正确，请重试。");
       return;
     }
 
-    if (method === "phone") {
-      window.location.assign(
-        `/verify?phone=${encodeURIComponent(value.trim())}`,
-      );
-      return;
-    }
-
-    setMessage("登录链接已发送，请前往邮箱完成验证。");
+    window.location.assign("/workspace/settings");
   }
 
   return (
@@ -63,62 +46,40 @@ export default function LoginPage() {
           登录后可发布需求、提交报价，并在同一工作台管理订单。
         </p>
 
-        <div className="auth-tabs" role="tablist" aria-label="登录方式">
-          <button
-            aria-selected={method === "phone"}
-            className={method === "phone" ? "is-active" : ""}
-            onClick={() => {
-              setMethod("phone");
-              setValue("+86");
-              setMessage("");
-            }}
-            role="tab"
-            type="button"
-          >
-            手机验证码
-          </button>
-          <button
-            aria-selected={method === "email"}
-            className={method === "email" ? "is-active" : ""}
-            onClick={() => {
-              setMethod("email");
-              setValue("");
-              setMessage("");
-            }}
-            role="tab"
-            type="button"
-          >
-            邮箱登录
-          </button>
-        </div>
-
         <form className="auth-form" onSubmit={handleSubmit}>
-          <label htmlFor="login-identifier">
-            {method === "phone" ? "手机号" : "邮箱地址"}
-          </label>
+          <label htmlFor="login-email">邮箱地址</label>
           <input
-            autoComplete={method === "phone" ? "tel" : "email"}
-            id="login-identifier"
-            inputMode={method === "phone" ? "tel" : "email"}
-            onChange={(event) => setValue(event.target.value)}
-            placeholder={method === "phone" ? "+8613800138000" : "you@example.com"}
+            autoComplete="email"
+            id="login-email"
+            inputMode="email"
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="you@example.com"
             required
-            type={method === "phone" ? "tel" : "email"}
-            value={value}
+            type="email"
+            value={email}
+          />
+          <label htmlFor="login-password">密码</label>
+          <input
+            autoComplete="current-password"
+            id="login-password"
+            minLength={6}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="请输入密码"
+            required
+            type="password"
+            value={password}
           />
           <Button disabled={pending} type="submit">
-            {pending
-              ? "正在发送..."
-              : method === "phone"
-                ? "发送验证码"
-                : "发送登录链接"}
+            {pending ? "正在登录..." : "登录"}
           </Button>
         </form>
 
         {message ? <p className="auth-message">{message}</p> : null}
+
         <p className="auth-terms">
-          继续即表示你同意平台服务规则与隐私政策。
+          还没有账号？<Link href="/register">注册新账号</Link>
         </p>
+        <p className="auth-terms">继续即表示你同意平台服务规则与隐私政策。</p>
       </Card>
     </main>
   );
