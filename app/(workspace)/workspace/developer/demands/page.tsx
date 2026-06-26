@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { listPublishedDemands } from "@/lib/domain/demands/service";
-import { createQuote } from "@/lib/domain/quotes/service";
+import { createQuoteFromForm } from "@/lib/domain/quotes/form";
 import { createClient } from "@/lib/auth/server";
 
 const currency = new Intl.NumberFormat("zh-CN", {
@@ -16,22 +16,14 @@ async function submitQuote(formData: FormData) {
   "use server";
 
   const demandId = String(formData.get("demandId") ?? "");
-  const amountYuan = Number(formData.get("amountYuan") ?? 0);
-  const deliveryDays = Number(formData.get("deliveryDays") ?? 0);
-  const validDays = Number(formData.get("validDays") ?? 0);
-  const proposal = String(formData.get("proposal") ?? "");
   const supabase = await createClient();
 
-  const expiresAt = new Date(
-    Date.now() + Math.max(1, validDays) * 24 * 60 * 60 * 1000,
-  ).toISOString();
-
   try {
-    await createQuote(supabase, demandId, {
-      amountCents: Math.round(amountYuan * 100),
-      deliveryDays,
-      expiresAt,
-      proposal,
+    await createQuoteFromForm(supabase, demandId, {
+      amountYuan: formData.get("amountYuan")?.toString() ?? null,
+      deliveryDays: formData.get("deliveryDays")?.toString() ?? null,
+      proposal: formData.get("proposal")?.toString() ?? null,
+      validDays: formData.get("validDays")?.toString() ?? null,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "提交报价失败";

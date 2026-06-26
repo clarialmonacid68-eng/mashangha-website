@@ -12,24 +12,16 @@ import {
   submitOrderDelivery,
   type SubmitOrderDeliveryInput,
 } from "@/lib/domain/orders/service";
+import { parseOptionalOrderAttachment } from "@/lib/domain/orders/form";
 import { createClient, createServiceClient } from "@/lib/auth/server";
 
 function optionalAttachment(formData: FormData) {
-  const storagePath = String(formData.get("attachmentPath") ?? "").trim();
-  const fileName = String(formData.get("attachmentName") ?? "").trim();
-
-  if (!storagePath || !fileName) {
-    return [];
-  }
-
-  return [
-    {
-      contentType: String(formData.get("attachmentType") ?? "").trim() || null,
-      fileName,
-      sizeBytes: Number(formData.get("attachmentSize") ?? 0),
-      storagePath,
-    },
-  ];
+  return parseOptionalOrderAttachment({
+    attachmentName: formData.get("attachmentName")?.toString() ?? null,
+    attachmentPath: formData.get("attachmentPath")?.toString() ?? null,
+    attachmentSize: formData.get("attachmentSize")?.toString() ?? null,
+    attachmentType: formData.get("attachmentType")?.toString() ?? null,
+  });
 }
 
 async function postMessage(formData: FormData) {
