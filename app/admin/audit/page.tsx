@@ -1,15 +1,11 @@
 import { Card } from "@/components/ui/card";
+import { listAdminAuditLogs } from "@/lib/domain/admin/queries";
 import { createServiceClient } from "@/lib/auth/server";
 import { requireAdmin } from "@/lib/security/audit";
 
 export default async function AdminAuditPage() {
   await requireAdmin();
-  const service = createServiceClient();
-  const { data: logs } = await service
-    .from("audit_logs")
-    .select("id, actor_id, action, entity_type, entity_id, metadata, created_at")
-    .order("created_at", { ascending: false })
-    .limit(100);
+  const logs = await listAdminAuditLogs(createServiceClient());
 
   return (
     <main className="workspace-page application-shell-admin">

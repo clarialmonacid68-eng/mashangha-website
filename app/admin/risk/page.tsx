@@ -7,6 +7,10 @@ import {
   recordPaymentReview,
   setUserSuspension,
 } from "@/lib/domain/admin/governance";
+import {
+  listAbnormalPayments,
+  listSuspendedProfiles,
+} from "@/lib/domain/admin/queries";
 import { createServiceClient } from "@/lib/auth/server";
 import { requireAdmin } from "@/lib/security/audit";
 
@@ -55,19 +59,10 @@ export default async function AdminRiskPage({
   await requireAdmin();
   const query = await searchParams;
   const service = createServiceClient();
-  const [{ data: suspendedUsers }, { data: abnormalPayments }] =
-    await Promise.all([
-      service
-        .from("profiles")
-        .select("id, display_name, is_suspended, updated_at")
-        .eq("is_suspended", true)
-        .limit(20),
-      service
-        .from("payments")
-        .select("id, order_id, status, amount_cents, provider, updated_at")
-        .in("status", ["failed", "closed"])
-        .limit(20),
-    ]);
+  const [suspendedUsers, abnormalPayments] = await Promise.all([
+    listSuspendedProfiles(service),
+    listAbnormalPayments(service),
+  ]);
 
   return (
     <main className="workspace-page application-shell-admin">

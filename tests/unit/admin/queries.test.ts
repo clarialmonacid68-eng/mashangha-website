@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  listAbnormalPayments,
+  listAdminAuditLogs,
   listAdminDemands,
   listAdminDisputes,
   listAdminOrders,
   listAdminProducts,
+  listSuspendedProfiles,
 } from "@/lib/domain/admin/queries";
 
 type QueryResult = {
@@ -32,6 +35,16 @@ class FakeAdminListService {
     return this;
   }
 
+  eq(column: string, value: unknown) {
+    this.calls.push({ method: "eq", value: { column, value } });
+    return this;
+  }
+
+  in(column: string, values: unknown[]) {
+    this.calls.push({ method: "in", value: { column, values } });
+    return this;
+  }
+
   limit(count: number) {
     this.calls.push({ method: "limit", value: count });
     return Promise.resolve(this.result);
@@ -52,10 +65,55 @@ describe("admin list queries", () => {
     expect(service.calls).toContainEqual({ method: "limit", value: 50 });
   });
 
+  it("lists audit logs with the audit page ordering and limit", async () => {
+    const service = new FakeAdminListService({ data: null, error: null });
+
+    await expect(listAdminAuditLogs(service as never)).resolves.toEqual([]);
+
+    expect(service.calls).toContainEqual({
+      method: "from",
+      value: "audit_logs",
+    });
+    expect(service.calls).toContainEqual({
+      method: "order",
+      value: { column: "created_at", options: { ascending: false } },
+    });
+    expect(service.calls).toContainEqual({ method: "limit", value: 100 });
+  });
+
+  it("lists only suspended profiles for risk review", async () => {
+    const service = new FakeAdminListService({ data: null, error: null });
+
+    await expect(listSuspendedProfiles(service as never)).resolves.toEqual([]);
+
+    expect(service.calls).toContainEqual({ method: "from", value: "profiles" });
+    expect(service.calls).toContainEqual({
+      method: "eq",
+      value: { column: "is_suspended", value: true },
+    });
+    expect(service.calls).toContainEqual({ method: "limit", value: 20 });
+  });
+
+  it("lists failed and closed payments for risk review", async () => {
+    const service = new FakeAdminListService({ data: null, error: null });
+
+    await expect(listAbnormalPayments(service as never)).resolves.toEqual([]);
+
+    expect(service.calls).toContainEqual({ method: "from", value: "payments" });
+    expect(service.calls).toContainEqual({
+      method: "in",
+      value: { column: "status", values: ["failed", "closed"] },
+    });
+    expect(service.calls).toContainEqual({ method: "limit", value: 20 });
+  });
+
   it.each([
     ["products", listAdminProducts],
     ["orders", listAdminOrders],
     ["disputes", listAdminDisputes],
+    ["audit logs", listAdminAuditLogs],
+    ["suspended profiles", listSuspendedProfiles],
+    ["abnormal payments", listAbnormalPayments],
   ])("throws backend errors for %s", async (_table, listFn) => {
     const service = new FakeAdminListService({
       data: null,
