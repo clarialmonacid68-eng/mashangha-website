@@ -4,9 +4,11 @@ import {
   listAbnormalPayments,
   listAdminAuditLogs,
   listAdminDemands,
+  listAdminDevelopers,
   listAdminDisputes,
   listAdminOrders,
   listAdminProducts,
+  listDeveloperReviewAuditLogs,
   listSuspendedProfiles,
 } from "@/lib/domain/admin/queries";
 
@@ -107,6 +109,44 @@ describe("admin list queries", () => {
     expect(service.calls).toContainEqual({ method: "limit", value: 20 });
   });
 
+  it("lists developer review profiles by most recent update", async () => {
+    const service = new FakeAdminListService({ data: null, error: null });
+
+    await expect(listAdminDevelopers(service as never)).resolves.toEqual([]);
+
+    expect(service.calls).toContainEqual({
+      method: "from",
+      value: "developer_profiles",
+    });
+    expect(service.calls).toContainEqual({
+      method: "order",
+      value: { column: "updated_at", options: { ascending: false } },
+    });
+    expect(service.calls).toContainEqual({ method: "limit", value: 50 });
+  });
+
+  it("lists developer review audit logs for note context", async () => {
+    const service = new FakeAdminListService({ data: null, error: null });
+
+    await expect(
+      listDeveloperReviewAuditLogs(service as never),
+    ).resolves.toEqual([]);
+
+    expect(service.calls).toContainEqual({
+      method: "from",
+      value: "audit_logs",
+    });
+    expect(service.calls).toContainEqual({
+      method: "eq",
+      value: { column: "entity_type", value: "developer_profile" },
+    });
+    expect(service.calls).toContainEqual({
+      method: "order",
+      value: { column: "created_at", options: { ascending: false } },
+    });
+    expect(service.calls).toContainEqual({ method: "limit", value: 100 });
+  });
+
   it.each([
     ["products", listAdminProducts],
     ["orders", listAdminOrders],
@@ -114,6 +154,8 @@ describe("admin list queries", () => {
     ["audit logs", listAdminAuditLogs],
     ["suspended profiles", listSuspendedProfiles],
     ["abnormal payments", listAbnormalPayments],
+    ["developers", listAdminDevelopers],
+    ["developer review audit logs", listDeveloperReviewAuditLogs],
   ])("throws backend errors for %s", async (_table, listFn) => {
     const service = new FakeAdminListService({
       data: null,

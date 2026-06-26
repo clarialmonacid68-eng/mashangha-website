@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  reviewDeveloperProfile,
   reviewDemand,
   reviewProduct,
   setProductSuspension,
@@ -130,6 +131,93 @@ describe("admin governance moderation services", () => {
         note: " ",
         productId: "product-1",
         suspended: true,
+      }),
+    ).resolves.toEqual({ ok: false, reason: "missing_note" });
+
+    expect(service.operations).toEqual([]);
+  });
+
+  it("approves a developer profile and records audit context", async () => {
+    const service = createService();
+
+    await expect(
+      reviewDeveloperProfile(service as never, {
+        adminId: "admin-1",
+        decision: "approve",
+        developerId: "developer-1",
+        note: "Credentials verified",
+      }),
+    ).resolves.toEqual({ entityId: "developer-1", ok: true });
+
+    expect(service.operations).toMatchObject([
+      {
+        filters: { user_id: "developer-1" },
+        table: "developer_profiles",
+        type: "update",
+        values: {
+          rejection_reason: null,
+          review_status: "approved",
+        },
+      },
+      {
+        table: "audit_logs",
+        type: "insert",
+        values: {
+          action: "developer.approve",
+          actor_id: "admin-1",
+          entity_id: "developer-1",
+          entity_type: "developer_profile",
+          metadata: { note: "Credentials verified" },
+        },
+      },
+    ]);
+    expect(service.operations[0]).toHaveProperty("values.reviewed_at");
+  });
+
+  it("rejects a developer profile with a rejection reason", async () => {
+    const service = createService();
+
+    await expect(
+      reviewDeveloperProfile(service as never, {
+        adminId: "admin-1",
+        decision: "reject",
+        developerId: "developer-1",
+        note: "Profile is incomplete",
+      }),
+    ).resolves.toEqual({ entityId: "developer-1", ok: true });
+
+    expect(service.operations).toMatchObject([
+      {
+        filters: { user_id: "developer-1" },
+        table: "developer_profiles",
+        type: "update",
+        values: {
+          rejection_reason: "Profile is incomplete",
+          review_status: "rejected",
+        },
+      },
+      {
+        table: "audit_logs",
+        type: "insert",
+        values: {
+          action: "developer.reject",
+          entity_id: "developer-1",
+          entity_type: "developer_profile",
+          metadata: { note: "Profile is incomplete" },
+        },
+      },
+    ]);
+  });
+
+  it("requires a developer id, valid decision, and note before developer review", async () => {
+    const service = createService();
+
+    await expect(
+      reviewDeveloperProfile(service as never, {
+        adminId: "admin-1",
+        decision: "maybe",
+        developerId: "developer-1",
+        note: " ",
       }),
     ).resolves.toEqual({ ok: false, reason: "missing_note" });
 

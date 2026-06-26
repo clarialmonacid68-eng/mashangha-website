@@ -3,45 +3,31 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { reviewDeveloperProfile } from "@/lib/domain/admin/governance";
+import {
+  listAdminDevelopers,
+  listDeveloperReviewAuditLogs,
+} from "@/lib/domain/admin/queries";
 import { createServiceClient } from "@/lib/auth/server";
-import { requireAdmin, writeAuditLog } from "@/lib/security/audit";
+import { requireAdmin } from "@/lib/security/audit";
 
-async function reviewDeveloper(formData: FormData) {
+async function reviewDeveloperAction(formData: FormData) {
   "use server";
 
   const admin = await requireAdmin();
-  const developerId = String(formData.get("developerId") ?? "");
-  const decision = String(formData.get("decision") ?? "");
-  const note = String(formData.get("note") ?? "").trim();
+  const result = await reviewDeveloperProfile(createServiceClient(), {
+    adminId: admin.id,
+    decision: String(formData.get("decision") ?? ""),
+    developerId: String(formData.get("developerId") ?? ""),
+    note: String(formData.get("note") ?? ""),
+  });
 
-  if (!developerId || !["approve", "reject"].includes(decision) || !note) {
+  if (!result.ok) {
     redirect("/admin/developers?error=missing_note");
   }
 
-  const service = createServiceClient();
-  const { error } = await service
-    .from("developer_profiles")
-    .update({
-      rejection_reason: decision === "reject" ? note : null,
-      review_status: decision === "approve" ? "approved" : "rejected",
-      reviewed_at: new Date().toISOString(),
-    })
-    .eq("user_id", developerId);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  await writeAuditLog({
-    action: decision === "approve" ? "developer.approve" : "developer.reject",
-    actorId: admin.id,
-    entityId: developerId,
-    entityType: "developer_profile",
-    metadata: { note },
-  });
-
   revalidatePath("/admin/developers");
-  redirect(`/admin/developers?reviewed=${developerId}`);
+  redirect(`/admin/developers?reviewed=${result.entityId}`);
 }
 
 export default async function AdminDevelopersPage({
@@ -52,18 +38,9 @@ export default async function AdminDevelopersPage({
   await requireAdmin();
   const query = await searchParams;
   const service = createServiceClient();
-  const [{ data: developers }, { data: auditLogs }] = await Promise.all([
-    service
-      .from("developer_profiles")
-      .select("user_id, display_name, headline, bio, skills, review_status, rejection_reason, reviewed_at")
-      .order("updated_at", { ascending: false })
-      .limit(50),
-    service
-      .from("audit_logs")
-      .select("entity_id, metadata, created_at")
-      .eq("entity_type", "developer_profile")
-      .order("created_at", { ascending: false })
-      .limit(100),
+  const [developers, auditLogs] = await Promise.all([
+    listAdminDevelopers(service),
+    listDeveloperReviewAuditLogs(service),
   ]);
   const auditNoteByDeveloperId = new Map(
     auditLogs
@@ -104,7 +81,7 @@ export default async function AdminDevelopersPage({
             {developer.rejection_reason ? (
               <p>拒绝原因：{developer.rejection_reason}</p>
             ) : null}
-            <form action={reviewDeveloper} className="auth-form">
+            <form action={reviewDeveloperAction} className="auth-form">
               <input name="developerId" type="hidden" value={developer.user_id} />
               <label htmlFor={`note-${developer.user_id}`}>
                 审核备注-{developer.user_id}

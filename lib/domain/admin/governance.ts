@@ -308,3 +308,52 @@ export async function setProductSuspension(
 
   return { entityId: input.productId, ok: true };
 }
+
+/**
+ * Review (approve/reject) a developer certification profile. Owns the
+ * review_status transition, rejection reason and audit log previously inlined
+ * in the admin page.
+ */
+export async function reviewDeveloperProfile(
+  service: Service,
+  input: {
+    adminId: string;
+    decision: string;
+    developerId: string;
+    note: string;
+  },
+): Promise<AdminModerationResult> {
+  const note = input.note.trim();
+
+  if (!input.developerId || !isReviewDecision(input.decision) || !note) {
+    return { ok: false, reason: "missing_note" };
+  }
+
+  const approve = input.decision === "approve";
+  const { error } = await service
+    .from("developer_profiles")
+    .update({
+      rejection_reason: approve ? null : note,
+      review_status: approve ? "approved" : "rejected",
+      reviewed_at: new Date().toISOString(),
+    })
+    .eq("user_id", input.developerId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  await writeAudit(service, {
+    action: approve ? "developer.approve" : "developer.reject",
+    actorId: input.adminId,
+    entityId: input.developerId,
+    entityType: "developer_profile",
+    metadata: { note },
+  });
+
+  logBusinessEvent(approve ? "developer.approved" : "developer.rejected", {
+    developerId: input.developerId,
+  });
+
+  return { entityId: input.developerId, ok: true };
+}

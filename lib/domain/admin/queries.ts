@@ -120,3 +120,34 @@ export async function listAbnormalPayments(service: Service) {
 
   return data ?? [];
 }
+
+export async function listAdminDevelopers(service: Service) {
+  const { data, error } = await service
+    .from("developer_profiles")
+    .select(
+      "user_id, display_name, headline, bio, skills, review_status, rejection_reason, reviewed_at",
+    )
+    .order("updated_at", { ascending: false })
+    .limit(ADMIN_LIST_LIMIT);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ?? [];
+}
+
+export async function listDeveloperReviewAuditLogs(service: Service) {
+  const { data, error } = await service
+    .from("audit_logs")
+    .select("entity_id, metadata, created_at")
+    .eq("entity_type", "developer_profile")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ?? [];
+}
