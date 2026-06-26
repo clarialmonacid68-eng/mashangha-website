@@ -11,6 +11,7 @@ import {
 import { createQuote, selectQuoteForOrder } from "@/lib/domain/quotes/service";
 import {
   closeOrderPayment,
+  confirmOrderMockPaymentForUser,
   confirmMockPayment,
   createOrderPayment,
 } from "@/lib/payments/service";
@@ -186,6 +187,36 @@ describeWithDatabase("mock full-payment checkout", () => {
         title: "客户已完成模拟付款",
       },
     ]);
+  });
+
+  it("confirms a pay-page mock payment only for the order customer", async () => {
+    const provider = new MockPaymentProvider();
+    const order = await createPendingPaymentOrder();
+    const checkout = await createOrderPayment(customer, provider, {
+      idempotencyKey: `pay-${order.id}`,
+      orderId: order.id,
+    });
+
+    await expect(
+      confirmOrderMockPaymentForUser(developer, admin, {
+        orderId: order.id,
+        providerPaymentId: checkout.providerPayment.providerPaymentId,
+      }),
+    ).resolves.toEqual({ ok: false, reason: "forbidden" });
+
+    const confirmed = await confirmOrderMockPaymentForUser(customer, admin, {
+      orderId: order.id,
+      providerPaymentId: checkout.providerPayment.providerPaymentId,
+    });
+
+    expect(confirmed).toEqual({ ok: true, orderId: order.id });
+
+    const { data: storedOrder } = await admin
+      .from("orders")
+      .select("status")
+      .eq("id", order.id)
+      .single();
+    expect(storedOrder?.status).toBe("in_progress");
   });
 
   it("closes a pending payment before closing the order", async () => {

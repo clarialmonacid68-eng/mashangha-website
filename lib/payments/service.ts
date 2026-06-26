@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/db/types";
 import { createServiceInAppNotification } from "@/lib/notifications/repository";
 import { logBusinessEvent } from "@/lib/observability/logger";
+import { MockPaymentProvider } from "@/lib/payments/mock-provider";
 import type { PaymentProvider } from "@/lib/payments/provider";
 
 type OrderRow = Database["public"]["Tables"]["orders"]["Row"];
@@ -152,4 +153,78 @@ export async function closeOrderPayment(
   }
 
   return normalizePaymentOrderResult(data);
+}
+
+export type ConfirmOrderMockPaymentResult =
+  | { ok: true; orderId: string }
+  | {
+      ok: false;
+      reason: "unauthenticated" | "forbidden" | "missing_payment" | "confirm_failed";
+    };
+
+/**
+ * Confirm a mock payment for the current user from the pay page.
+ *
+ * Owns the business rules that previously lived inline in the page server
+ * action: locate the mock payment, verify it belongs to the given order and to
+ * the authenticated buyer, seed the mock provider from the stored snapshot, and
+ * run the confirmation. Returns a typed result so the page maps it to redirects.
+ *
+ * `userClient` is the RLS-scoped client (identifies the caller); `service` is
+ * the service-role client used to read payment/order rows and run the RPC.
+ */
+export async function confirmOrderMockPaymentForUser(
+  userClient: SupabaseClient<Database>,
+  service: SupabaseClient<Database>,
+  input: { orderId: string; providerPaymentId: string },
+): Promise<ConfirmOrderMockPaymentResult> {
+  if (!input.providerPaymentId) {
+    return { ok: false, reason: "missing_payment" };
+  }
+
+  const {
+    data: { user },
+  } = await userClient.auth.getUser();
+
+  if (!user) {
+    return { ok: false, reason: "unauthenticated" };
+  }
+
+  const { data: payment } = await service
+    .from("payments")
+    .select("amount_cents, order_id, provider_transaction_id, status")
+    .eq("provider", "mock")
+    .eq("provider_transaction_id", input.providerPaymentId)
+    .single();
+
+  if (!payment || payment.order_id !== input.orderId) {
+    return { ok: false, reason: "missing_payment" };
+  }
+
+  const { data: order } = await service
+    .from("orders")
+    .select("customer_id")
+    .eq("id", payment.order_id)
+    .single();
+
+  if (order?.customer_id !== user.id) {
+    return { ok: false, reason: "forbidden" };
+  }
+
+  const provider = new MockPaymentProvider();
+  provider.seedPayment({
+    amountCents: payment.amount_cents,
+    providerPaymentId: input.providerPaymentId,
+    status: payment.status === "closed" ? "closed" : "pending",
+  });
+
+  try {
+    await confirmMockPayment(service, provider, {
+      providerPaymentId: input.providerPaymentId,
+    });
+  } catch {
+    return { ok: false, reason: "confirm_failed" };
+  }
+
+  return { ok: true, orderId: payment.order_id };
 }
