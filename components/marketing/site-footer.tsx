@@ -13,7 +13,16 @@ export function SiteFooter() {
         <Link href="/rules/trading">交易规则</Link>
         <Link href="/rules/disputes">争议规则</Link>
       </nav>
-      <p className="site-footer-copy">© 2026 码上好 · mshcode.com</p>
+      <div className="site-footer-compliance">
+        <p className="site-footer-copy">© 2026 码上好 · mshcode.com</p>
+        <a
+          href="https://beian.miit.gov.cn/"
+          rel="noreferrer"
+          target="_blank"
+        >
+          陕ICP备2026015803号-1
+        </a>
+      </div>
     </footer>
   );
 }
