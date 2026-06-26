@@ -13,6 +13,13 @@ import {
   type SubmitOrderDeliveryInput,
 } from "@/lib/domain/orders/service";
 import { parseOptionalOrderAttachment } from "@/lib/domain/orders/form";
+import {
+  getOrderForParticipant,
+  getOrderReviewByAuthor,
+  listOrderAttachments,
+  listOrderDeliveries,
+  listOrderMessages,
+} from "@/lib/domain/orders/queries";
 import { createClient, createServiceClient } from "@/lib/auth/server";
 
 function optionalAttachment(formData: FormData) {
@@ -198,43 +205,17 @@ export default async function OrderDetailPage({
     redirect("/login");
   }
 
-  const { data: order } = await supabase
-    .from("orders")
-    .select("id, amount_cents, status, customer_id, developer_id, created_at")
-    .eq("id", id)
-    .single();
+  const order = await getOrderForParticipant(supabase, id);
 
   if (!order) {
     redirect("/workspace/settings");
   }
 
-  const [
-    { data: messages },
-    { data: attachments },
-    { data: deliveries },
-    { data: existingReview },
-  ] = await Promise.all([
-    supabase
-      .from("order_messages")
-      .select("id, body, sender_id, created_at")
-      .eq("order_id", id)
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("order_attachments")
-      .select("id, file_name, storage_path, message_id, uploader_id, created_at")
-      .eq("order_id", id)
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("deliveries")
-      .select("id, version, notes, delivery_url, is_current, created_at")
-      .eq("order_id", id)
-      .order("version", { ascending: false }),
-    supabase
-      .from("reviews")
-      .select("id, rating, body")
-      .eq("order_id", id)
-      .eq("author_id", user.id)
-      .maybeSingle(),
+  const [messages, attachments, deliveries, existingReview] = await Promise.all([
+    listOrderMessages(supabase, id),
+    listOrderAttachments(supabase, id),
+    listOrderDeliveries(supabase, id),
+    getOrderReviewByAuthor(supabase, id, user.id),
   ]);
 
   const isDeveloper = order.developer_id === user.id;
