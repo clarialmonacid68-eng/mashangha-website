@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Card } from "@/components/ui/card";
+import { listParticipantOrders } from "@/lib/domain/orders/queries";
 import { createClient } from "@/lib/auth/server";
 
 const currency = new Intl.NumberFormat("zh-CN", {
@@ -20,12 +21,7 @@ export default async function OrdersPage() {
     redirect("/login");
   }
 
-  const { data: orders } = await supabase
-    .from("orders")
-    .select(
-      "id, amount_cents, status, customer_id, developer_id, created_at, demands(title)",
-    )
-    .order("created_at", { ascending: false });
+  const orders = await listParticipantOrders(supabase);
 
   return (
     <div className="workspace-page">

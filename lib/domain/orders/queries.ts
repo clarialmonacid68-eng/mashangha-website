@@ -10,6 +10,25 @@ import type { Database } from "@/lib/db/types";
 
 type Service = SupabaseClient<Database>;
 
+/**
+ * Orders the current user participates in (customer or developer). RLS limits
+ * rows to the caller; includes the demand title for the list display.
+ */
+export async function listParticipantOrders(service: Service) {
+  const { data, error } = await service
+    .from("orders")
+    .select(
+      "id, amount_cents, status, customer_id, developer_id, created_at, demands(title)",
+    )
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ?? [];
+}
+
 export async function getOrderForParticipant(service: Service, orderId: string) {
   const { data, error } = await service
     .from("orders")

@@ -6,6 +6,7 @@ import {
   listOrderAttachments,
   listOrderDeliveries,
   listOrderMessages,
+  listParticipantOrders,
 } from "@/lib/domain/orders/queries";
 
 type QueryResult = {
@@ -55,6 +56,23 @@ class FakeOrderQueryService {
 }
 
 describe("order detail read queries", () => {
+  it("lists participant orders newest first with demand titles", async () => {
+    const service = new FakeOrderQueryService({ data: null, error: null });
+
+    await expect(listParticipantOrders(service as never)).resolves.toEqual([]);
+
+    expect(service.calls).toContainEqual({ method: "from", value: "orders" });
+    expect(service.calls).toContainEqual({
+      method: "select",
+      value:
+        "id, amount_cents, status, customer_id, developer_id, created_at, demands(title)",
+    });
+    expect(service.calls).toContainEqual({
+      method: "order",
+      value: { column: "created_at", options: { ascending: false } },
+    });
+  });
+
   it("returns null when the participant order is not visible", async () => {
     const service = new FakeOrderQueryService({ data: null, error: null });
 
@@ -173,6 +191,7 @@ describe("order detail read queries", () => {
   });
 
   it.each([
+    ["participant orders", listParticipantOrders],
     ["messages", listOrderMessages],
     ["attachments", listOrderAttachments],
     ["deliveries", listOrderDeliveries],
