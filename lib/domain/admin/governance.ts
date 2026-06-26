@@ -154,3 +154,157 @@ export async function setDemandSuspension(
     demandId: input.demandId,
   });
 }
+
+// ---------------------------------------------------------------------------
+// Catalog moderation (demand / product review + product takedown)
+// ---------------------------------------------------------------------------
+
+export type AdminReviewDecision = "approve" | "reject";
+
+export type AdminModerationResult =
+  | { entityId: string; ok: true }
+  | { ok: false; reason: "missing_note" };
+
+function isReviewDecision(value: string): value is AdminReviewDecision {
+  return value === "approve" || value === "reject";
+}
+
+/**
+ * Review (approve/reject) a demand. Owns the publish/close state transition and
+ * the audit log that previously lived inline in the admin page. Returns a typed
+ * result so the page maps it to a redirect; throws only on a real DB error.
+ */
+export async function reviewDemand(
+  service: Service,
+  input: {
+    adminId: string;
+    decision: string;
+    demandId: string;
+    note: string;
+  },
+): Promise<AdminModerationResult> {
+  const note = input.note.trim();
+
+  if (!input.demandId || !isReviewDecision(input.decision) || !note) {
+    return { ok: false, reason: "missing_note" };
+  }
+
+  const approve = input.decision === "approve";
+  const { error } = await service
+    .from("demands")
+    .update({
+      published_at: approve ? new Date().toISOString() : null,
+      review_notes: note,
+      status: approve ? "published" : "closed",
+    })
+    .eq("id", input.demandId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  await writeAudit(service, {
+    action: approve ? "demand.approve" : "demand.reject",
+    actorId: input.adminId,
+    entityId: input.demandId,
+    entityType: "demand",
+    metadata: { note },
+  });
+
+  logBusinessEvent(approve ? "demand.approved" : "demand.rejected", {
+    demandId: input.demandId,
+  });
+
+  return { entityId: input.demandId, ok: true };
+}
+
+/**
+ * Review (approve/reject) an AI app marketplace product. Owns the publish/reject
+ * state transition and audit log.
+ */
+export async function reviewProduct(
+  service: Service,
+  input: {
+    adminId: string;
+    decision: string;
+    note: string;
+    productId: string;
+  },
+): Promise<AdminModerationResult> {
+  const note = input.note.trim();
+
+  if (!input.productId || !isReviewDecision(input.decision) || !note) {
+    return { ok: false, reason: "missing_note" };
+  }
+
+  const approve = input.decision === "approve";
+  const { error } = await service
+    .from("products")
+    .update({
+      published_at: approve ? new Date().toISOString() : null,
+      review_notes: note,
+      status: approve ? "published" : "rejected",
+    })
+    .eq("id", input.productId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  await writeAudit(service, {
+    action: approve ? "product.approve" : "product.reject",
+    actorId: input.adminId,
+    entityId: input.productId,
+    entityType: "product",
+    metadata: { note },
+  });
+
+  logBusinessEvent(approve ? "product.approved" : "product.rejected", {
+    productId: input.productId,
+  });
+
+  return { entityId: input.productId, ok: true };
+}
+
+/**
+ * Suspend (take down) or resume a product on the marketplace. Suspension only
+ * hides the product and blocks new purchases; it does not alter past purchases.
+ */
+export async function setProductSuspension(
+  service: Service,
+  input: {
+    adminId: string;
+    note: string;
+    productId: string;
+    suspended: boolean;
+  },
+): Promise<AdminModerationResult> {
+  const note = input.note.trim();
+
+  if (!input.productId || !note) {
+    return { ok: false, reason: "missing_note" };
+  }
+
+  const { error } = await service
+    .from("products")
+    .update({ is_suspended: input.suspended })
+    .eq("id", input.productId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  await writeAudit(service, {
+    action: input.suspended ? "product.suspend" : "product.resume",
+    actorId: input.adminId,
+    entityId: input.productId,
+    entityType: "product",
+    metadata: { note },
+  });
+
+  logBusinessEvent(input.suspended ? "product.suspended" : "product.resumed", {
+    productId: input.productId,
+  });
+
+  return { entityId: input.productId, ok: true };
+}

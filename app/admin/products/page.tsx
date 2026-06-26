@@ -3,9 +3,13 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  reviewProduct,
+  setProductSuspension,
+} from "@/lib/domain/admin/governance";
 import { productCategoryLabels } from "@/lib/domain/products/schema";
 import { createServiceClient } from "@/lib/auth/server";
-import { requireAdmin, writeAuditLog } from "@/lib/security/audit";
+import { requireAdmin } from "@/lib/security/audit";
 
 const currency = new Intl.NumberFormat("zh-CN", {
   style: "currency",
@@ -21,76 +25,42 @@ const statusLabel: Record<string, string> = {
   delisted: "已下架",
 };
 
-async function reviewProduct(formData: FormData) {
+async function reviewProductAction(formData: FormData) {
   "use server";
 
   const admin = await requireAdmin();
-  const productId = String(formData.get("productId") ?? "");
-  const decision = String(formData.get("decision") ?? "");
-  const note = String(formData.get("note") ?? "").trim();
+  const result = await reviewProduct(createServiceClient(), {
+    adminId: admin.id,
+    decision: String(formData.get("decision") ?? ""),
+    note: String(formData.get("note") ?? ""),
+    productId: String(formData.get("productId") ?? ""),
+  });
 
-  if (!productId || !["approve", "reject"].includes(decision) || !note) {
+  if (!result.ok) {
     redirect("/admin/products?error=missing_note");
   }
 
-  const service = createServiceClient();
-  const { error } = await service
-    .from("products")
-    .update({
-      published_at: decision === "approve" ? new Date().toISOString() : null,
-      review_notes: note,
-      status: decision === "approve" ? "published" : "rejected",
-    })
-    .eq("id", productId);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  await writeAuditLog({
-    action: decision === "approve" ? "product.approve" : "product.reject",
-    actorId: admin.id,
-    entityId: productId,
-    entityType: "product",
-    metadata: { note },
-  });
-
   revalidatePath("/admin/products");
-  redirect(`/admin/products?reviewed=${productId}`);
+  redirect(`/admin/products?reviewed=${result.entityId}`);
 }
 
-async function toggleSuspension(formData: FormData) {
+async function toggleSuspensionAction(formData: FormData) {
   "use server";
 
   const admin = await requireAdmin();
-  const productId = String(formData.get("productId") ?? "");
-  const suspended = String(formData.get("suspended") ?? "") === "suspend";
-  const note = String(formData.get("note") ?? "").trim();
+  const result = await setProductSuspension(createServiceClient(), {
+    adminId: admin.id,
+    note: String(formData.get("note") ?? ""),
+    productId: String(formData.get("productId") ?? ""),
+    suspended: String(formData.get("suspended") ?? "") === "suspend",
+  });
 
-  if (!productId || !note) {
+  if (!result.ok) {
     redirect("/admin/products?error=missing_note");
   }
 
-  const service = createServiceClient();
-  const { error } = await service
-    .from("products")
-    .update({ is_suspended: suspended })
-    .eq("id", productId);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  await writeAuditLog({
-    action: suspended ? "product.suspend" : "product.resume",
-    actorId: admin.id,
-    entityId: productId,
-    entityType: "product",
-    metadata: { note },
-  });
-
   revalidatePath("/admin/products");
-  redirect(`/admin/products?reviewed=${productId}`);
+  redirect(`/admin/products?reviewed=${result.entityId}`);
 }
 
 export default async function AdminProductsPage({
@@ -139,7 +109,7 @@ export default async function AdminProductsPage({
             {product.review_notes ? (
               <p>审核备注：{product.review_notes}</p>
             ) : null}
-            <form action={reviewProduct} className="auth-form">
+            <form action={reviewProductAction} className="auth-form">
               <input name="productId" type="hidden" value={product.id} />
               <label htmlFor={`product-note-${product.id}`}>审核备注</label>
               <textarea
@@ -162,7 +132,7 @@ export default async function AdminProductsPage({
                 </Button>
               </div>
             </form>
-            <form action={toggleSuspension} className="auth-form">
+            <form action={toggleSuspensionAction} className="auth-form">
               <input name="productId" type="hidden" value={product.id} />
               <input
                 name="suspended"
