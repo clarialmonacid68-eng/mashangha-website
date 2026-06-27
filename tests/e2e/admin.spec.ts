@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
-import type { APIRequestContext, Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
+
+const PASSWORD = "Test-Password-Aa1!";
 
 function createAdminClient() {
   return createClient(
@@ -13,10 +15,9 @@ function createAdminClient() {
 async function createSignedInUser(page: Page, role: "admin" | "customer") {
   const admin = createAdminClient();
   const email = `admin-e2e-${role}-${crypto.randomUUID()}@example.com`;
-  const password = `Test-${crypto.randomUUID()}-Aa1!`;
   const { data, error } = await admin.auth.admin.createUser({
     email,
-    password,
+    password: PASSWORD,
     email_confirm: true,
   });
   expect(error).toBeNull();
@@ -32,75 +33,29 @@ async function createSignedInUser(page: Page, role: "admin" | "customer") {
   }
 
   await page.goto("/login");
-  await page.getByRole("tab", { name: "邮箱登录" }).click();
   await page.getByLabel("邮箱地址").fill(email);
-  await page.getByRole("button", { name: "发送登录链接" }).click();
-  await expect(page.getByText("登录链接已发送")).toBeVisible();
+  await page.getByLabel("密码").fill(PASSWORD);
+  await page.getByRole("button", { name: "登录" }).click();
+  await expect(page).toHaveURL(/\/workspace\//);
 
   return { email, userId: user.id };
 }
 
-async function consumeMagicLink(request: APIRequestContext, email: string) {
-  let messageId: string | undefined;
-  await expect
-    .poll(
-      async () => {
-        const response = await request.get(
-          "http://127.0.0.1:54324/api/v1/messages",
-        );
-        const payload = (await response.json()) as {
-          messages: Array<{
-            ID: string;
-            To: Array<{ Address: string }>;
-          }>;
-        };
-        const message = payload.messages.find((item) =>
-          item.To.some(({ Address }) => Address === email),
-        );
-        messageId = message?.ID;
-        return Boolean(messageId);
-      },
-      { timeout: 10_000 },
-    )
-    .toBe(true);
-
-  const messageResponse = await request.get(
-    `http://127.0.0.1:54324/api/v1/message/${messageId}`,
-  );
-  const message = (await messageResponse.json()) as {
-    HTML: string;
-    Text: string;
-  };
-  return `${message.Text}\n${message.HTML}`
-    .match(/https?:\/\/[^\s"'<>]+\/auth\/v1\/verify[^\s"'<>]+/)?.[0]
-    .replaceAll("&amp;", "&");
-}
-
-test("non-admin users cannot access operations console", async ({
-  page,
-  request,
-}) => {
-  const account = await createSignedInUser(page, "customer");
-  const magicLink = await consumeMagicLink(request, account.email);
-  expect(magicLink).toBeTruthy();
-  await page.goto(magicLink!);
-
+test("non-admin users cannot access operations console", async ({ page }) => {
+  await createSignedInUser(page, "customer");
   await page.goto("/admin");
   await expect(page.getByRole("heading", { name: "运营后台" })).not.toBeVisible();
   await expect(page).toHaveURL(/\/workspace\/settings|\/login/);
 });
 
-test("admin developer review writes audit log", async ({ page, request }) => {
+test("admin developer review writes audit log", async ({ page }) => {
   const adminClient = createAdminClient();
-  const account = await createSignedInUser(page, "admin");
-  const magicLink = await consumeMagicLink(request, account.email);
-  expect(magicLink).toBeTruthy();
-  await page.goto(magicLink!);
+  await createSignedInUser(page, "admin");
 
   const { data: developer, error: createError } =
     await adminClient.auth.admin.createUser({
       email: `pending-dev-${crypto.randomUUID()}@example.com`,
-      password: `Test-${crypto.randomUUID()}-Aa1!`,
+      password: PASSWORD,
       email_confirm: true,
     });
   expect(createError).toBeNull();

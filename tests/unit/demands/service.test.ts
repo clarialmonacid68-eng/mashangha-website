@@ -206,6 +206,19 @@ describe("customer demand services", () => {
     expect(service.calls.some((call) => call.method === "gte")).toBe(true);
   });
 
+  it("sanitizes public demand keyword filters before building PostgREST expressions", async () => {
+    const service = new FakeDemandService();
+
+    await listPublishedDemands(service as never, {
+      keyword: "AI, CRM (beta) 100%",
+    });
+
+    expect(service.calls).toContainEqual({
+      method: "or",
+      value: "title.ilike.%AI CRM beta 100%,description.ilike.%AI CRM beta 100%",
+    });
+  });
+
   it("gets only published and non-suspended public demand detail", async () => {
     const service = new FakeDemandService({
       data: { id: "demand-1", title: "Build AI app" },

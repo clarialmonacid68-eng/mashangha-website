@@ -138,6 +138,9 @@ describeWithDatabase("mock full-payment checkout", () => {
     });
 
     expect(second.payment.id).toBe(first.payment.id);
+    expect(second.providerPayment.providerPaymentId).toBe(
+      first.providerPayment.providerPaymentId,
+    );
     expect(first.payment.amount_cents).toBe(order.amount_cents);
 
     const { data: payments } = await admin

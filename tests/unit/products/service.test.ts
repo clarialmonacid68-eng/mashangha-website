@@ -177,6 +177,19 @@ describe("public product services", () => {
     });
   });
 
+  it("sanitizes public product keyword filters before building PostgREST expressions", async () => {
+    const service = new FakeProductService();
+
+    await listPublishedProducts(service as never, {
+      keyword: "CRM, AI (demo) 100%",
+    });
+
+    expect(service.calls).toContainEqual({
+      method: "or",
+      value: "title.ilike.%CRM AI demo 100%,summary.ilike.%CRM AI demo 100%",
+    });
+  });
+
   it("gets only published and non-suspended public product detail", async () => {
     const service = new FakeProductService({
       data: { id: "product-1", title: "AI CRM" },

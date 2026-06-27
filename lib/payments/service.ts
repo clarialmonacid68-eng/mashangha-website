@@ -85,7 +85,16 @@ export async function createOrderPayment(
     throw new Error(error.message);
   }
 
-  return { payment, providerPayment };
+  return {
+    payment,
+    providerPayment: {
+      ...providerPayment,
+      amountCents: payment.amount_cents,
+      providerPaymentId:
+        payment.provider_transaction_id ?? providerPayment.providerPaymentId,
+      status: payment.status === "closed" ? "closed" : "pending",
+    },
+  };
 }
 
 export async function confirmMockPayment(

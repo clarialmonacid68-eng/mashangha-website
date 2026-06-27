@@ -22,6 +22,13 @@ async function getCurrentUserId(supabase: Service) {
   return user.id;
 }
 
+function sanitizeSearchKeyword(keyword: string) {
+  return keyword
+    .replace(/[%,().{}[\]"'\\]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export type ProductFilters = {
   category?: string;
   keyword?: string;
@@ -43,9 +50,10 @@ export async function listPublishedProducts(
     query = query.eq("category", filters.category);
   }
 
-  if (filters.keyword) {
+  const keyword = filters.keyword ? sanitizeSearchKeyword(filters.keyword) : "";
+  if (keyword) {
     query = query.or(
-      `title.ilike.%${filters.keyword}%,summary.ilike.%${filters.keyword}%`,
+      `title.ilike.%${keyword}%,summary.ilike.%${keyword}%`,
     );
   }
 

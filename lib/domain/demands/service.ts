@@ -34,6 +34,13 @@ function demandPayload(input: ReturnType<typeof parseDemandInput>) {
   };
 }
 
+function sanitizeSearchKeyword(keyword: string) {
+  return keyword
+    .replace(/[%,().{}[\]"'\\]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export async function createDemandDraft(
   supabase: SupabaseClient,
   input: DemandInput,
@@ -234,9 +241,10 @@ export async function listPublishedDemands(
     query = query.lte("expected_delivery_days", filters.maxDeliveryDays);
   }
 
-  if (filters.keyword) {
+  const keyword = filters.keyword ? sanitizeSearchKeyword(filters.keyword) : "";
+  if (keyword) {
     query = query.or(
-      `title.ilike.%${filters.keyword}%,description.ilike.%${filters.keyword}%`,
+      `title.ilike.%${keyword}%,description.ilike.%${keyword}%`,
     );
   }
 
