@@ -11,6 +11,10 @@ export type { DeveloperApplicationInput };
 const OWN_PROFILE_COLUMNS =
   "display_name, city, bio, skills, service_scopes, starting_price_cents, portfolio_title, portfolio_description, portfolio_url, portfolio_image_url, contact, payout_subject_type, payout_subject_name, review_status, rejection_reason";
 
+const PUBLIC_DEVELOPER_LIST_COLUMNS = "user_id, headline, bio, skills";
+const PUBLIC_DEVELOPER_DETAIL_COLUMNS =
+  "headline, bio, skills, hourly_rate_cents";
+
 type DeveloperProfileRow = Database["public"]["Tables"]["developer_profiles"]["Row"];
 
 export type DeveloperOwnProfile = Pick<
@@ -47,6 +51,51 @@ export async function getDeveloperOwnProfile(
   }
 
   return data as DeveloperOwnProfile | null;
+}
+
+export type PublicDeveloperListItem = Pick<
+  DeveloperProfileRow,
+  "bio" | "headline" | "skills" | "user_id"
+>;
+
+export type PublicDeveloperDetail = Pick<
+  DeveloperProfileRow,
+  "bio" | "headline" | "hourly_rate_cents" | "skills"
+>;
+
+export async function listPublicDevelopers(
+  supabase: SupabaseClient,
+): Promise<PublicDeveloperListItem[]> {
+  const { data, error } = await supabase
+    .from("developer_profiles")
+    .select(PUBLIC_DEVELOPER_LIST_COLUMNS)
+    .eq("review_status", "approved")
+    .order("reviewed_at", { ascending: false })
+    .limit(24);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []) as PublicDeveloperListItem[];
+}
+
+export async function getPublicDeveloperDetail(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<PublicDeveloperDetail | null> {
+  const { data, error } = await supabase
+    .from("developer_profiles")
+    .select(PUBLIC_DEVELOPER_DETAIL_COLUMNS)
+    .eq("user_id", userId)
+    .eq("review_status", "approved")
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as PublicDeveloperDetail | null;
 }
 
 export async function submitDeveloperApplication(

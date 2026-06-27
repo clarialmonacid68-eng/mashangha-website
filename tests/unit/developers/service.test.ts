@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { getDeveloperOwnProfile } from "@/lib/domain/developers/service";
+import {
+  getDeveloperOwnProfile,
+  getPublicDeveloperDetail,
+  listPublicDevelopers,
+} from "@/lib/domain/developers/service";
+
+type QueryResult = {
+  data: unknown[] | null;
+  error: { message: string } | null;
+};
 
 type SingleQueryResult = {
   data: unknown | null;
@@ -11,7 +20,10 @@ class FakeDeveloperService {
   readonly calls: Array<{ method: string; value: unknown }> = [];
 
   constructor(
-    private readonly result: SingleQueryResult = { data: null, error: null },
+    private readonly result: QueryResult | SingleQueryResult = {
+      data: null,
+      error: null,
+    },
   ) {}
 
   from(table: string) {
@@ -29,9 +41,19 @@ class FakeDeveloperService {
     return this;
   }
 
+  order(column: string, options: { ascending: boolean }) {
+    this.calls.push({ method: "order", value: { column, options } });
+    return this;
+  }
+
+  limit(count: number) {
+    this.calls.push({ method: "limit", value: count });
+    return Promise.resolve(this.result as QueryResult);
+  }
+
   maybeSingle() {
     this.calls.push({ method: "maybeSingle", value: null });
-    return Promise.resolve(this.result);
+    return Promise.resolve(this.result as SingleQueryResult);
   }
 }
 
@@ -82,5 +104,61 @@ describe("developer profile services", () => {
     await expect(
       getDeveloperOwnProfile(service as never, "developer-1"),
     ).rejects.toThrow("database unavailable");
+  });
+
+  it("lists approved public developers by latest review", async () => {
+    const service = new FakeDeveloperService();
+
+    await expect(listPublicDevelopers(service as never)).resolves.toEqual([]);
+
+    expect(service.calls).toContainEqual({
+      method: "from",
+      value: "developer_profiles",
+    });
+    expect(service.calls).toContainEqual({
+      method: "select",
+      value: "user_id, headline, bio, skills",
+    });
+    expect(service.calls).toContainEqual({
+      method: "eq",
+      value: { column: "review_status", value: "approved" },
+    });
+    expect(service.calls).toContainEqual({
+      method: "order",
+      value: { column: "reviewed_at", options: { ascending: false } },
+    });
+    expect(service.calls).toContainEqual({ method: "limit", value: 24 });
+  });
+
+  it("gets only an approved public developer detail", async () => {
+    const service = new FakeDeveloperService({
+      data: { headline: "AI Builder", skills: ["Next.js"] },
+      error: null,
+    });
+
+    await expect(
+      getPublicDeveloperDetail(service as never, "developer-1"),
+    ).resolves.toEqual({ headline: "AI Builder", skills: ["Next.js"] });
+
+    expect(service.calls).toContainEqual({
+      method: "from",
+      value: "developer_profiles",
+    });
+    expect(service.calls).toContainEqual({
+      method: "select",
+      value: "headline, bio, skills, hourly_rate_cents",
+    });
+    expect(service.calls).toContainEqual({
+      method: "eq",
+      value: { column: "user_id", value: "developer-1" },
+    });
+    expect(service.calls).toContainEqual({
+      method: "eq",
+      value: { column: "review_status", value: "approved" },
+    });
+    expect(service.calls).toContainEqual({
+      method: "maybeSingle",
+      value: null,
+    });
   });
 });

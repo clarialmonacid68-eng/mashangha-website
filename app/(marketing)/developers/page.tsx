@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Card } from "@/components/ui/card";
+import { listPublicDevelopers } from "@/lib/domain/developers/service";
 import { createClient } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
@@ -12,12 +13,7 @@ export const metadata: Metadata = {
 
 export default async function DevelopersPage() {
   const supabase = await createClient();
-  const { data: developers } = await supabase
-    .from("developer_profiles")
-    .select("user_id, headline, bio, skills")
-    .eq("review_status", "approved")
-    .order("reviewed_at", { ascending: false })
-    .limit(24);
+  const developers = await listPublicDevelopers(supabase);
 
   return (
     <main className="marketing-page">
@@ -54,4 +50,3 @@ export default async function DevelopersPage() {
     </main>
   );
 }
-

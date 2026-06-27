@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { Card } from "@/components/ui/card";
+import { getPublicDeveloperDetail } from "@/lib/domain/developers/service";
 import { createClient } from "@/lib/auth/server";
 
 export async function generateMetadata({
@@ -25,12 +26,7 @@ export default async function DeveloperDetailPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
-  const { data: developer } = await supabase
-    .from("developer_profiles")
-    .select("headline, bio, skills, hourly_rate_cents")
-    .eq("user_id", id)
-    .eq("review_status", "approved")
-    .maybeSingle();
+  const developer = await getPublicDeveloperDetail(supabase, id);
 
   if (!developer) {
     notFound();
@@ -54,4 +50,3 @@ export default async function DeveloperDetailPage({
     </main>
   );
 }
-
