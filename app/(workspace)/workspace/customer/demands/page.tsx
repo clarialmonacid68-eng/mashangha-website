@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { listCustomerDemands } from "@/lib/domain/demands/service";
 import { createClient } from "@/lib/auth/server";
 
 const statusLabel: Record<string, string> = {
@@ -23,11 +24,7 @@ export default async function CustomerDemandsPage() {
     redirect("/login");
   }
 
-  const { data: demands } = await supabase
-    .from("demands")
-    .select("id, title, description, status, created_at")
-    .eq("customer_id", user.id)
-    .order("created_at", { ascending: false });
+  const demands = await listCustomerDemands(supabase, user.id);
 
   return (
     <div className="workspace-page">

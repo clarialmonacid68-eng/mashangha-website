@@ -173,6 +173,23 @@ export async function closeDemand(supabase: SupabaseClient, demandId: string) {
   return data;
 }
 
+export async function listCustomerDemands(
+  supabase: SupabaseClient,
+  customerId: string,
+) {
+  const { data, error } = await supabase
+    .from("demands")
+    .select("id, title, description, status, created_at")
+    .eq("customer_id", customerId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ?? [];
+}
+
 export async function listPublishedDemands(
   supabase: SupabaseClient,
   input: DemandFilters = {},
