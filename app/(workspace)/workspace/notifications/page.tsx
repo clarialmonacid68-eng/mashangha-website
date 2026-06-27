@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { Card } from "@/components/ui/card";
+import { listWorkspaceNotifications } from "@/lib/domain/notifications/queries";
 import { createClient } from "@/lib/auth/server";
 
 export default async function NotificationsPage() {
@@ -13,11 +14,7 @@ export default async function NotificationsPage() {
     redirect("/login");
   }
 
-  const { data: notifications } = await supabase
-    .from("notifications")
-    .select("id, title, body, event_type, read_at, created_at")
-    .order("created_at", { ascending: false })
-    .limit(50);
+  const notifications = await listWorkspaceNotifications(supabase);
 
   return (
     <div className="workspace-page">
