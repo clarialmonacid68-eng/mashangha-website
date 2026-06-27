@@ -9,6 +9,10 @@ import {
   resolveWorkspaceRole,
   type WorkspaceRole,
 } from "@/lib/auth/guards";
+import {
+  getDeveloperReviewStatus,
+  listCurrentUserRoles,
+} from "@/lib/domain/settings/queries";
 import { createClient } from "@/lib/auth/server";
 
 async function switchRole(formData: FormData) {
@@ -24,11 +28,7 @@ async function switchRole(formData: FormData) {
     redirect("/login");
   }
 
-  const { data: roleRows } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", user.id);
-  const roles = roleRows?.map(({ role }) => role) ?? [];
+  const roles = await listCurrentUserRoles(supabase, user.id);
 
   if (!canAccessWorkspace(roles, requestedRole)) {
     redirect("/workspace/settings?error=role_not_allowed");
@@ -77,16 +77,8 @@ export default async function WorkspaceSettingsPage() {
     redirect("/login");
   }
 
-  const { data: roleRows } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", user.id);
-  const roles = roleRows?.map(({ role }) => role) ?? [];
-  const { data: developerProfile } = await supabase
-    .from("developer_profiles")
-    .select("review_status")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const roles = await listCurrentUserRoles(supabase, user.id);
+  const developerProfile = await getDeveloperReviewStatus(supabase, user.id);
   const cookieStore = await cookies();
   const currentRole = resolveWorkspaceRole(
     roles,
