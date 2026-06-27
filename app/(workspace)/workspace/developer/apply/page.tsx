@@ -2,20 +2,9 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { createDeveloperApplicationFromForm } from "@/lib/domain/developers/form";
 import { submitDeveloperApplication } from "@/lib/domain/developers/service";
 import { createClient } from "@/lib/auth/server";
-
-function splitList(value: FormDataEntryValue | null) {
-  return String(value ?? "")
-    .split(/[\n,，]/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
-function parseMoneyToCents(value: FormDataEntryValue | null) {
-  const amount = Number(value);
-  return Number.isFinite(amount) ? Math.round(amount * 100) : -1;
-}
 
 async function submitApplication(formData: FormData) {
   "use server";
@@ -23,26 +12,10 @@ async function submitApplication(formData: FormData) {
   const supabase = await createClient();
 
   try {
-    await submitDeveloperApplication(supabase, {
-      displayName: String(formData.get("displayName") ?? ""),
-      city: String(formData.get("city") ?? ""),
-      bio: String(formData.get("bio") ?? ""),
-      skills: splitList(formData.get("skills")),
-      serviceScopes: splitList(formData.get("serviceScopes")),
-      startingPriceCents: parseMoneyToCents(formData.get("startingPrice")),
-      portfolio: {
-        title: String(formData.get("portfolioTitle") ?? ""),
-        description: String(formData.get("portfolioDescription") ?? ""),
-        url: String(formData.get("portfolioUrl") ?? ""),
-        imageUrl: String(formData.get("portfolioImageUrl") ?? ""),
-      },
-      contact: String(formData.get("contact") ?? ""),
-      payoutSubjectType:
-        formData.get("payoutSubjectType") === "company"
-          ? "company"
-          : "individual",
-      payoutSubjectName: String(formData.get("payoutSubjectName") ?? ""),
-    });
+    await submitDeveloperApplication(
+      supabase,
+      createDeveloperApplicationFromForm(formData),
+    );
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "提交开发者认证失败";
