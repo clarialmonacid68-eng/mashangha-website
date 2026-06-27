@@ -4,8 +4,50 @@ import {
   parseDeveloperApplication,
   type DeveloperApplicationInput,
 } from "@/lib/domain/developers/schema";
+import type { Database } from "@/lib/db/types";
 
 export type { DeveloperApplicationInput };
+
+const OWN_PROFILE_COLUMNS =
+  "display_name, city, bio, skills, service_scopes, starting_price_cents, portfolio_title, portfolio_description, portfolio_url, portfolio_image_url, contact, payout_subject_type, payout_subject_name, review_status, rejection_reason";
+
+type DeveloperProfileRow = Database["public"]["Tables"]["developer_profiles"]["Row"];
+
+export type DeveloperOwnProfile = Pick<
+  DeveloperProfileRow,
+  | "bio"
+  | "city"
+  | "contact"
+  | "display_name"
+  | "payout_subject_name"
+  | "payout_subject_type"
+  | "portfolio_description"
+  | "portfolio_image_url"
+  | "portfolio_title"
+  | "portfolio_url"
+  | "rejection_reason"
+  | "review_status"
+  | "service_scopes"
+  | "skills"
+  | "starting_price_cents"
+>;
+
+export async function getDeveloperOwnProfile(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<DeveloperOwnProfile | null> {
+  const { data, error } = await supabase
+    .from("developer_profiles")
+    .select(OWN_PROFILE_COLUMNS)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as DeveloperOwnProfile | null;
+}
 
 export async function submitDeveloperApplication(
   supabase: SupabaseClient,

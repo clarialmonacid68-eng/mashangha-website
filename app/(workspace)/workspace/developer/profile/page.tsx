@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Card } from "@/components/ui/card";
+import { getDeveloperOwnProfile } from "@/lib/domain/developers/service";
 import { createClient } from "@/lib/auth/server";
 
 const statusCopy = {
@@ -26,13 +27,7 @@ export default async function DeveloperProfilePage({
     redirect("/login");
   }
 
-  const { data: profile } = await supabase
-    .from("developer_profiles")
-    .select(
-      "display_name, city, bio, skills, service_scopes, starting_price_cents, portfolio_title, portfolio_description, portfolio_url, portfolio_image_url, contact, payout_subject_type, payout_subject_name, review_status, rejection_reason",
-    )
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const profile = await getDeveloperOwnProfile(supabase, user.id);
 
   return (
     <div className="workspace-page">
