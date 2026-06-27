@@ -1,16 +1,29 @@
 import { describe, expect, it } from "vitest";
 
-import { listCustomerDemands } from "@/lib/domain/demands/service";
+import {
+  getCustomerDemandQuoteContext,
+  listCustomerDemands,
+} from "@/lib/domain/demands/service";
 
 type QueryResult = {
   data: unknown[] | null;
   error: { message: string } | null;
 };
 
+type SingleQueryResult = {
+  data: unknown | null;
+  error: { message: string } | null;
+};
+
 class FakeDemandService {
   readonly calls: Array<{ method: string; value: unknown }> = [];
 
-  constructor(private readonly result: QueryResult = { data: null, error: null }) {}
+  constructor(
+    private readonly result: QueryResult | SingleQueryResult = {
+      data: null,
+      error: null,
+    },
+  ) {}
 
   from(table: string) {
     this.calls.push({ method: "from", value: table });
@@ -29,7 +42,12 @@ class FakeDemandService {
 
   order(column: string, options: { ascending: boolean }) {
     this.calls.push({ method: "order", value: { column, options } });
-    return Promise.resolve(this.result);
+    return Promise.resolve(this.result as QueryResult);
+  }
+
+  single() {
+    this.calls.push({ method: "single", value: null });
+    return Promise.resolve(this.result as SingleQueryResult);
   }
 }
 
@@ -65,5 +83,31 @@ describe("customer demand services", () => {
     await expect(
       listCustomerDemands(service as never, "customer-1"),
     ).rejects.toThrow("database unavailable");
+  });
+
+  it("gets customer demand quote context", async () => {
+    const service = new FakeDemandService({
+      data: { id: "demand-1", status: "published", title: "Build app" },
+      error: null,
+    });
+
+    await expect(
+      getCustomerDemandQuoteContext(service as never, "demand-1"),
+    ).resolves.toEqual({
+      id: "demand-1",
+      status: "published",
+      title: "Build app",
+    });
+
+    expect(service.calls).toContainEqual({ method: "from", value: "demands" });
+    expect(service.calls).toContainEqual({
+      method: "select",
+      value: "id, title, status",
+    });
+    expect(service.calls).toContainEqual({
+      method: "eq",
+      value: { column: "id", value: "demand-1" },
+    });
+    expect(service.calls).toContainEqual({ method: "single", value: null });
   });
 });

@@ -80,3 +80,20 @@ export async function selectQuoteForOrder(
 
   return data;
 }
+
+export async function listQuotesForCustomerDemand(
+  supabase: SupabaseClient,
+  demandId: string,
+) {
+  const { data, error } = await supabase
+    .from("quotes")
+    .select("id, amount_cents, delivery_days, proposal, status, developer_id")
+    .eq("demand_id", demandId)
+    .order("amount_cents", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ?? [];
+}

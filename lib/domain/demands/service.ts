@@ -190,6 +190,23 @@ export async function listCustomerDemands(
   return data ?? [];
 }
 
+export async function getCustomerDemandQuoteContext(
+  supabase: SupabaseClient,
+  demandId: string,
+) {
+  const { data, error } = await supabase
+    .from("demands")
+    .select("id, title, status")
+    .eq("id", demandId)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
 export async function listPublishedDemands(
   supabase: SupabaseClient,
   input: DemandFilters = {},

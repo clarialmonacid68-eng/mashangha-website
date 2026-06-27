@@ -2,7 +2,11 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { selectQuoteForOrder } from "@/lib/domain/quotes/service";
+import { getCustomerDemandQuoteContext } from "@/lib/domain/demands/service";
+import {
+  listQuotesForCustomerDemand,
+  selectQuoteForOrder,
+} from "@/lib/domain/quotes/service";
 import { createClient } from "@/lib/auth/server";
 
 const currency = new Intl.NumberFormat("zh-CN", {
@@ -49,21 +53,13 @@ export default async function CustomerDemandQuotesPage({
     redirect("/login");
   }
 
-  const { data: demand } = await supabase
-    .from("demands")
-    .select("id, title, status")
-    .eq("id", id)
-    .single();
+  const demand = await getCustomerDemandQuoteContext(supabase, id);
 
   if (!demand) {
     redirect("/workspace/settings");
   }
 
-  const { data: quotes } = await supabase
-    .from("quotes")
-    .select("id, amount_cents, delivery_days, proposal, status, developer_id")
-    .eq("demand_id", id)
-    .order("amount_cents", { ascending: true });
+  const quotes = await listQuotesForCustomerDemand(supabase, id);
 
   return (
     <div className="workspace-page">
