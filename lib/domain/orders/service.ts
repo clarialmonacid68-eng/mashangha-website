@@ -413,6 +413,29 @@ export async function completeAcceptedOrderWithMockSettlement(
   return completed as OrderRow;
 }
 
+export async function completeAcceptedOrderWithMockSettlementForCustomer(
+  userClient: SupabaseClient,
+  service: SupabaseClient<Database>,
+  orderId: string,
+) {
+  const customerId = await getCurrentUserId(userClient);
+  const { data: order, error: orderError } = await userClient
+    .from("orders")
+    .select("customer_id")
+    .eq("id", orderId)
+    .single();
+
+  if (orderError) {
+    throw new Error(orderError.message);
+  }
+
+  if (order.customer_id !== customerId) {
+    throw new Error("只有订单客户可以完成模拟结算");
+  }
+
+  return completeAcceptedOrderWithMockSettlement(service, orderId);
+}
+
 export async function rejectOrderDelivery(
   supabase: SupabaseClient,
   orderId: string,

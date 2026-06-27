@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { OrderFileUpload } from "@/components/workspace/order-file-upload";
 import {
   acceptOrderDelivery,
-  completeAcceptedOrderWithMockSettlement,
+  completeAcceptedOrderWithMockSettlementForCustomer,
   createOrderMessage,
   createOrderReview,
   rejectOrderDelivery,
@@ -121,30 +121,13 @@ async function completeSettlement(formData: FormData) {
 
   const orderId = String(formData.get("orderId") ?? "");
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   try {
-    if (!user) {
-      throw new Error("请先登录");
-    }
-
-    const { data: order, error: orderError } = await supabase
-      .from("orders")
-      .select("customer_id")
-      .eq("id", orderId)
-      .single();
-
-    if (orderError) {
-      throw new Error(orderError.message);
-    }
-
-    if (order.customer_id !== user.id) {
-      throw new Error("只有订单客户可以完成模拟结算");
-    }
-
-    await completeAcceptedOrderWithMockSettlement(createServiceClient(), orderId);
+    await completeAcceptedOrderWithMockSettlementForCustomer(
+      supabase,
+      createServiceClient(),
+      orderId,
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "模拟结算失败";
     redirect(

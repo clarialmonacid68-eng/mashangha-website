@@ -43,6 +43,28 @@ export async function getOrderForParticipant(service: Service, orderId: string) 
   return data;
 }
 
+export async function getOrderPaymentSummaryForCustomer(
+  service: Service,
+  orderId: string,
+  customerId: string,
+) {
+  const { data, error } = await service
+    .from("orders")
+    .select("id, amount_cents, status, developer_id, customer_id")
+    .eq("id", orderId)
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+
+  if (data.customer_id !== customerId) {
+    return null;
+  }
+
+  return data;
+}
+
 export async function listOrderMessages(service: Service, orderId: string) {
   const { data, error } = await service
     .from("order_messages")

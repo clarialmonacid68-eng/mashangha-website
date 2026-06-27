@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { getOrderPaymentSummaryForCustomer } from "@/lib/domain/orders/queries";
 import { MockPaymentProvider } from "@/lib/payments/mock-provider";
 import {
   confirmOrderMockPaymentForUser,
@@ -96,13 +97,9 @@ export default async function OrderPayPage({
     redirect("/login");
   }
 
-  const { data: order } = await supabase
-    .from("orders")
-    .select("id, amount_cents, status, developer_id, customer_id")
-    .eq("id", id)
-    .single();
+  const order = await getOrderPaymentSummaryForCustomer(supabase, id, user.id);
 
-  if (!order || order.customer_id !== user.id) {
+  if (!order) {
     redirect("/workspace/settings");
   }
 

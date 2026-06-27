@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  applyForDeveloperRole,
   getDeveloperOwnProfile,
   getPublicDeveloperDetail,
   listPublicDevelopers,
@@ -54,6 +55,14 @@ class FakeDeveloperService {
   maybeSingle() {
     this.calls.push({ method: "maybeSingle", value: null });
     return Promise.resolve(this.result as SingleQueryResult);
+  }
+
+  rpc(name: string) {
+    this.calls.push({ method: "rpc", value: name });
+    return Promise.resolve({
+      data: null,
+      error: this.result.error,
+    });
   }
 }
 
@@ -160,5 +169,27 @@ describe("developer profile services", () => {
       method: "maybeSingle",
       value: null,
     });
+  });
+
+  it("applies for the developer role through the domain service", async () => {
+    const service = new FakeDeveloperService();
+
+    await expect(applyForDeveloperRole(service as never)).resolves.toBeUndefined();
+
+    expect(service.calls).toContainEqual({
+      method: "rpc",
+      value: "apply_for_developer",
+    });
+  });
+
+  it("throws backend errors when applying for the developer role fails", async () => {
+    const service = new FakeDeveloperService({
+      data: null,
+      error: { message: "rpc unavailable" },
+    });
+
+    await expect(applyForDeveloperRole(service as never)).rejects.toThrow(
+      "rpc unavailable",
+    );
   });
 });

@@ -13,6 +13,7 @@ import {
   getDeveloperReviewStatus,
   listCurrentUserRoles,
 } from "@/lib/domain/settings/queries";
+import { applyForDeveloperRole } from "@/lib/domain/developers/service";
 import { createClient } from "@/lib/auth/server";
 
 async function switchRole(formData: FormData) {
@@ -58,9 +59,9 @@ async function applyForDeveloper() {
     redirect("/login");
   }
 
-  const { error } = await supabase.rpc("apply_for_developer");
-
-  if (error) {
+  try {
+    await applyForDeveloperRole(supabase);
+  } catch {
     redirect("/workspace/settings?error=developer_application_failed");
   }
 

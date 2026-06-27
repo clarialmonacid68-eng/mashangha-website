@@ -162,21 +162,10 @@ export type ConfirmOrderMockPaymentResult =
       reason: "unauthenticated" | "forbidden" | "missing_payment" | "confirm_failed";
     };
 
-/**
- * Confirm a mock payment for the current user from the pay page.
- *
- * Owns the business rules that previously lived inline in the page server
- * action: locate the mock payment, verify it belongs to the given order and to
- * the authenticated buyer, seed the mock provider from the stored snapshot, and
- * run the confirmation. Returns a typed result so the page maps it to redirects.
- *
- * `userClient` is the RLS-scoped client (identifies the caller); `service` is
- * the service-role client used to read payment/order rows and run the RPC.
- */
-export async function confirmOrderMockPaymentForUser(
+export async function confirmMockPaymentForCurrentUser(
   userClient: SupabaseClient<Database>,
   service: SupabaseClient<Database>,
-  input: { orderId: string; providerPaymentId: string },
+  input: { orderId?: string; providerPaymentId: string },
 ): Promise<ConfirmOrderMockPaymentResult> {
   if (!input.providerPaymentId) {
     return { ok: false, reason: "missing_payment" };
@@ -197,7 +186,7 @@ export async function confirmOrderMockPaymentForUser(
     .eq("provider_transaction_id", input.providerPaymentId)
     .single();
 
-  if (!payment || payment.order_id !== input.orderId) {
+  if (!payment || (input.orderId && payment.order_id !== input.orderId)) {
     return { ok: false, reason: "missing_payment" };
   }
 
@@ -227,4 +216,23 @@ export async function confirmOrderMockPaymentForUser(
   }
 
   return { ok: true, orderId: payment.order_id };
+}
+
+/**
+ * Confirm a mock payment for the current user from the pay page.
+ *
+ * Owns the business rules that previously lived inline in the page server
+ * action: locate the mock payment, verify it belongs to the given order and to
+ * the authenticated buyer, seed the mock provider from the stored snapshot, and
+ * run the confirmation. Returns a typed result so the page maps it to redirects.
+ *
+ * `userClient` is the RLS-scoped client (identifies the caller); `service` is
+ * the service-role client used to read payment/order rows and run the RPC.
+ */
+export async function confirmOrderMockPaymentForUser(
+  userClient: SupabaseClient<Database>,
+  service: SupabaseClient<Database>,
+  input: { orderId: string; providerPaymentId: string },
+): Promise<ConfirmOrderMockPaymentResult> {
+  return confirmMockPaymentForCurrentUser(userClient, service, input);
 }

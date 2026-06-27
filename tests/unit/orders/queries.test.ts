@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   getOrderForParticipant,
+  getOrderPaymentSummaryForCustomer,
   getOrderReviewByAuthor,
   listOrderAttachments,
   listOrderDeliveries,
@@ -53,6 +54,11 @@ class FakeOrderQueryService {
     this.calls.push({ method: "maybeSingle", value: null });
     return Promise.resolve(this.result);
   }
+
+  single() {
+    this.calls.push({ method: "single", value: null });
+    return Promise.resolve(this.result);
+  }
 }
 
 describe("order detail read queries", () => {
@@ -89,6 +95,68 @@ describe("order detail read queries", () => {
       method: "maybeSingle",
       value: null,
     });
+  });
+
+  it("gets the payment page summary for the order customer", async () => {
+    const service = new FakeOrderQueryService({
+      data: {
+        amount_cents: 120_000,
+        customer_id: "customer-1",
+        developer_id: "developer-1",
+        id: "order-1",
+        status: "pending_payment",
+      },
+      error: null,
+    });
+
+    await expect(
+      getOrderPaymentSummaryForCustomer(
+        service as never,
+        "order-1",
+        "customer-1",
+      ),
+    ).resolves.toEqual({
+      amount_cents: 120_000,
+      customer_id: "customer-1",
+      developer_id: "developer-1",
+      id: "order-1",
+      status: "pending_payment",
+    });
+
+    expect(service.calls).toContainEqual({ method: "from", value: "orders" });
+    expect(service.calls).toContainEqual({
+      method: "select",
+      value: "id, amount_cents, status, developer_id, customer_id",
+    });
+    expect(service.calls).toContainEqual({
+      method: "eq",
+      value: { column: "id", value: "order-1" },
+    });
+    expect(service.calls).toContainEqual({
+      method: "single",
+      value: null,
+    });
+  });
+
+  it("returns null when the payment page order is not owned by the customer", async () => {
+    const service = new FakeOrderQueryService({
+      data: {
+        amount_cents: 120_000,
+        customer_id: "customer-2",
+        developer_id: "developer-1",
+        id: "order-1",
+        status: "pending_payment",
+      },
+      error: null,
+    });
+
+    await expect(
+      getOrderPaymentSummaryForCustomer(
+        service as never,
+        "order-1",
+        "customer-1",
+      ),
+    ).resolves.toBeNull();
   });
 
   it("lists order messages oldest first", async () => {

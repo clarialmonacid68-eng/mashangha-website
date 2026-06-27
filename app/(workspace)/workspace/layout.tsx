@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { WorkspaceShell } from "@/components/workspace/workspace-shell";
 import { resolveWorkspaceRole } from "@/lib/auth/guards";
 import { createClient } from "@/lib/auth/server";
+import { listCurrentUserRoles } from "@/lib/domain/settings/queries";
 
 export default async function WorkspaceLayout({
   children,
@@ -20,18 +21,11 @@ export default async function WorkspaceLayout({
     redirect("/login");
   }
 
-  const { data: roleRows, error } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", user.id);
-
-  if (error) {
-    throw new Error("无法读取账号角色");
-  }
+  const roles = await listCurrentUserRoles(supabase, user.id);
 
   const cookieStore = await cookies();
   const role = resolveWorkspaceRole(
-    roleRows.map(({ role }) => role),
+    roles,
     cookieStore.get("workspace-role")?.value,
   );
 
@@ -41,4 +35,3 @@ export default async function WorkspaceLayout({
 
   return <WorkspaceShell role={role}>{children}</WorkspaceShell>;
 }
-

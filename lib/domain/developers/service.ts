@@ -98,6 +98,14 @@ export async function getPublicDeveloperDetail(
   return data as PublicDeveloperDetail | null;
 }
 
+export async function applyForDeveloperRole(supabase: SupabaseClient) {
+  const { error } = await supabase.rpc("apply_for_developer");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
 export async function submitDeveloperApplication(
   supabase: SupabaseClient,
   input: DeveloperApplicationInput,
