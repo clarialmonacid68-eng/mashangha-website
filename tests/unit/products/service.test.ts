@@ -1,9 +1,18 @@
 import { describe, expect, it } from "vitest";
 
-import { listBuyerPurchases } from "@/lib/domain/products/service";
+import {
+  getPublishedProduct,
+  listBuyerPurchases,
+  listPublishedProducts,
+} from "@/lib/domain/products/service";
 
 type QueryResult = {
   data: unknown[] | null;
+  error: { message: string } | null;
+};
+
+type SingleQueryResult = {
+  data: unknown | null;
   error: { message: string } | null;
 };
 
@@ -18,7 +27,10 @@ class FakeProductService {
   };
 
   constructor(
-    private readonly result: QueryResult = { data: null, error: null },
+    private readonly result: QueryResult | SingleQueryResult = {
+      data: null,
+      error: null,
+    },
     private readonly user: { id: string } | null = { id: "buyer-1" },
     private readonly authError: { message: string } | null = null,
   ) {}
@@ -40,7 +52,34 @@ class FakeProductService {
 
   order(column: string, options: { ascending: boolean }) {
     this.calls.push({ method: "order", value: { column, options } });
-    return Promise.resolve(this.result);
+    return this;
+  }
+
+  limit(count: number) {
+    this.calls.push({ method: "limit", value: count });
+    return this;
+  }
+
+  or(value: string) {
+    this.calls.push({ method: "or", value });
+    return this;
+  }
+
+  maybeSingle() {
+    this.calls.push({ method: "maybeSingle", value: null });
+    return Promise.resolve(this.result as SingleQueryResult);
+  }
+
+  then<TResult1 = QueryResult, TResult2 = never>(
+    onfulfilled?:
+      | ((value: QueryResult) => TResult1 | PromiseLike<TResult1>)
+      | null,
+    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
+  ) {
+    return Promise.resolve(this.result as QueryResult).then(
+      onfulfilled,
+      onrejected,
+    );
   }
 }
 
@@ -90,5 +129,85 @@ describe("product purchase services", () => {
     await expect(listBuyerPurchases(service as never)).rejects.toThrow(
       "database unavailable",
     );
+  });
+});
+
+describe("public product services", () => {
+  it("lists published public products with visibility filters", async () => {
+    const service = new FakeProductService();
+
+    await expect(listPublishedProducts(service as never)).resolves.toEqual([]);
+
+    expect(service.calls).toContainEqual({ method: "from", value: "products" });
+    expect(service.calls).toContainEqual({
+      method: "select",
+      value:
+        "id, seller_id, title, summary, description, category, price_cents, delivery_type, published_at",
+    });
+    expect(service.calls).toContainEqual({
+      method: "eq",
+      value: { column: "status", value: "published" },
+    });
+    expect(service.calls).toContainEqual({
+      method: "eq",
+      value: { column: "is_suspended", value: false },
+    });
+    expect(service.calls).toContainEqual({
+      method: "order",
+      value: { column: "published_at", options: { ascending: false } },
+    });
+    expect(service.calls).toContainEqual({ method: "limit", value: 24 });
+  });
+
+  it("applies public product filters after parsing", async () => {
+    const service = new FakeProductService();
+
+    await listPublishedProducts(service as never, {
+      category: "automation",
+      keyword: "CRM",
+    });
+
+    expect(service.calls).toContainEqual({
+      method: "eq",
+      value: { column: "category", value: "automation" },
+    });
+    expect(service.calls).toContainEqual({
+      method: "or",
+      value: "title.ilike.%CRM%,summary.ilike.%CRM%",
+    });
+  });
+
+  it("gets only published and non-suspended public product detail", async () => {
+    const service = new FakeProductService({
+      data: { id: "product-1", title: "AI CRM" },
+      error: null,
+    });
+
+    await expect(
+      getPublishedProduct(service as never, "product-1"),
+    ).resolves.toEqual({ id: "product-1", title: "AI CRM" });
+
+    expect(service.calls).toContainEqual({ method: "from", value: "products" });
+    expect(service.calls).toContainEqual({
+      method: "select",
+      value:
+        "id, seller_id, title, summary, description, category, price_cents, delivery_type, published_at",
+    });
+    expect(service.calls).toContainEqual({
+      method: "eq",
+      value: { column: "id", value: "product-1" },
+    });
+    expect(service.calls).toContainEqual({
+      method: "eq",
+      value: { column: "status", value: "published" },
+    });
+    expect(service.calls).toContainEqual({
+      method: "eq",
+      value: { column: "is_suspended", value: false },
+    });
+    expect(service.calls).toContainEqual({
+      method: "maybeSingle",
+      value: null,
+    });
   });
 });
