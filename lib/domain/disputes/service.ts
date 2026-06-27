@@ -49,6 +49,42 @@ export async function openOrderDispute(
   return data;
 }
 
+export async function getWorkspaceDisputeDetail(
+  supabase: SupabaseClient,
+  disputeId: string,
+) {
+  const { data, error } = await supabase
+    .from("disputes")
+    .select(
+      "id, order_id, opened_by, reason, requested_resolution, status, resolution_notes, created_at",
+    )
+    .eq("id", disputeId)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+export async function listWorkspaceDisputeEvidence(
+  supabase: SupabaseClient,
+  disputeId: string,
+) {
+  const { data, error } = await supabase
+    .from("dispute_evidence")
+    .select("id, storage_path, description, submitted_by, created_at")
+    .eq("dispute_id", disputeId)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ?? [];
+}
+
 async function resolveDispute(
   supabase: SupabaseClient,
   disputeId: string,

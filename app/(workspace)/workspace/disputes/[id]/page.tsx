@@ -1,6 +1,10 @@
 import { redirect } from "next/navigation";
 
 import { Card } from "@/components/ui/card";
+import {
+  getWorkspaceDisputeDetail,
+  listWorkspaceDisputeEvidence,
+} from "@/lib/domain/disputes/service";
 import { createClient } from "@/lib/auth/server";
 
 export default async function DisputeDetailPage({
@@ -18,23 +22,13 @@ export default async function DisputeDetailPage({
     redirect("/login");
   }
 
-  const { data: dispute } = await supabase
-    .from("disputes")
-    .select(
-      "id, order_id, opened_by, reason, requested_resolution, status, resolution_notes, created_at",
-    )
-    .eq("id", id)
-    .single();
+  const dispute = await getWorkspaceDisputeDetail(supabase, id);
 
   if (!dispute) {
     redirect("/workspace/settings");
   }
 
-  const { data: evidence } = await supabase
-    .from("dispute_evidence")
-    .select("id, storage_path, description, submitted_by, created_at")
-    .eq("dispute_id", id)
-    .order("created_at", { ascending: true });
+  const evidence = await listWorkspaceDisputeEvidence(supabase, id);
 
   return (
     <div className="workspace-page">
