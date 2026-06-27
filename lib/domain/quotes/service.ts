@@ -7,6 +7,21 @@ export type QuoteInput = {
   proposal: string;
 };
 
+type DemandTitleJoin = { title: string | null } | { title: string | null }[] | null;
+
+function normalizeDemandTitleJoin<T extends { demands: DemandTitleJoin }>(
+  rows: T[] | null,
+) {
+  return (
+    rows?.map((row) => ({
+      ...row,
+      demands: Array.isArray(row.demands)
+        ? (row.demands[0] ?? null)
+        : row.demands,
+    })) ?? []
+  );
+}
+
 function validateQuoteInput(input: QuoteInput) {
   if (!Number.isInteger(input.amountCents) || input.amountCents <= 0) {
     throw new Error("报价金额必须大于 0");
@@ -96,4 +111,23 @@ export async function listQuotesForCustomerDemand(
   }
 
   return data ?? [];
+}
+
+export async function listDeveloperQuotes(
+  supabase: SupabaseClient,
+  developerId: string,
+) {
+  const { data, error } = await supabase
+    .from("quotes")
+    .select(
+      "id, amount_cents, delivery_days, proposal, status, expires_at, demands(title)",
+    )
+    .eq("developer_id", developerId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return normalizeDemandTitleJoin(data);
 }

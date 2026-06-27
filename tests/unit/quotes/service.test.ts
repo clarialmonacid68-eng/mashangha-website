@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { listQuotesForCustomerDemand } from "@/lib/domain/quotes/service";
+import {
+  listDeveloperQuotes,
+  listQuotesForCustomerDemand,
+} from "@/lib/domain/quotes/service";
 
 type QueryResult = {
   data: unknown[] | null;
@@ -65,5 +68,49 @@ describe("customer quote services", () => {
     await expect(
       listQuotesForCustomerDemand(service as never, "demand-1"),
     ).rejects.toThrow("database unavailable");
+  });
+
+  it("lists developer quotes newest first with demand titles", async () => {
+    const service = new FakeQuoteService();
+
+    await expect(
+      listDeveloperQuotes(service as never, "developer-1"),
+    ).resolves.toEqual([]);
+
+    expect(service.calls).toContainEqual({ method: "from", value: "quotes" });
+    expect(service.calls).toContainEqual({
+      method: "select",
+      value:
+        "id, amount_cents, delivery_days, proposal, status, expires_at, demands(title)",
+    });
+    expect(service.calls).toContainEqual({
+      method: "eq",
+      value: { column: "developer_id", value: "developer-1" },
+    });
+    expect(service.calls).toContainEqual({
+      method: "order",
+      value: { column: "created_at", options: { ascending: false } },
+    });
+  });
+
+  it("normalizes developer quote demand title joins to a single object", async () => {
+    const service = new FakeQuoteService({
+      data: [
+        {
+          demands: [{ title: "Build an app" }],
+          id: "quote-1",
+        },
+      ],
+      error: null,
+    });
+
+    await expect(
+      listDeveloperQuotes(service as never, "developer-1"),
+    ).resolves.toEqual([
+      {
+        demands: { title: "Build an app" },
+        id: "quote-1",
+      },
+    ]);
   });
 });

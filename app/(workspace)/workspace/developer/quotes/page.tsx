@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { Card } from "@/components/ui/card";
+import { listDeveloperQuotes } from "@/lib/domain/quotes/service";
 import { createClient } from "@/lib/auth/server";
 
 const currency = new Intl.NumberFormat("zh-CN", {
@@ -19,11 +20,7 @@ export default async function DeveloperQuotesPage() {
     redirect("/login");
   }
 
-  const { data: quotes } = await supabase
-    .from("quotes")
-    .select("id, amount_cents, delivery_days, proposal, status, expires_at, demands(title)")
-    .eq("developer_id", user.id)
-    .order("created_at", { ascending: false });
+  const quotes = await listDeveloperQuotes(supabase, user.id);
 
   return (
     <div className="workspace-page">
