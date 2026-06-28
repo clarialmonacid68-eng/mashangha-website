@@ -1,0 +1,9 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" role="img">
+  <title>码上好 图标 32px</title>
+  <desc>码上好AI开发平台图标版32px favicon用</desc>
+  <line x1="3" y1="26" x2="3" y2="6" stroke="#0F172A" stroke-width="3" stroke-linecap="round"/>
+  <line x1="29" y1="26" x2="29" y2="6" stroke="#0F172A" stroke-width="3" stroke-linecap="round"/>
+  <line x1="16" y1="26" x2="16" y2="15" stroke="#0F172A" stroke-width="3" stroke-linecap="round"/>
+  <path d="M3 6 L16 15 L29 6" fill="none" stroke="#0F172A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="3" y1="29" x2="29" y2="29" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
