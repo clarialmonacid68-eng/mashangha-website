@@ -1,0 +1,19 @@
+<svg width="320" height="80" viewBox="0 0 320 80" xmlns="http://www.w3.org/2000/svg" role="img">
+  <title>码上好 深色版横版商标</title>
+  <desc>码上好AI开发平台极简线条商标深色背景横版，适用于深色导航栏、深色名片</desc>
+  <!-- 深色背景 -->
+  <rect width="320" height="80" fill="#0A1628" rx="0"/>
+  <!-- M图形 白色 -->
+  <line x1="16" y1="62" x2="16" y2="18" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="72" y1="62" x2="72" y2="18" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="44" y1="62" x2="44" y2="38" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M16 18 L44 38 L72 18" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- 亮蓝底线 -->
+  <line x1="16" y1="68" x2="72" y2="68" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- 分隔线 -->
+  <line x1="92" y1="14" x2="92" y2="68" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+  <!-- 主文字 白色 -->
+  <text x="108" y="52" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="28" font-weight="700" fill="white" letter-spacing="4">码上好</text>
+  <!-- 域名 -->
+  <text x="110" y="70" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="rgba(255,255,255,0.4)" letter-spacing="5">MSHCODE.COM</text>
+</svg>

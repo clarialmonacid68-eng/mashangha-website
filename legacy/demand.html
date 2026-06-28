@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>需求广场 — 码上好</title>
+<link rel="stylesheet" href="styles.css" />
+<style>
+.page-hdr { padding: 32px 40px; border-bottom: 2px solid var(--ink); background: var(--yellow-light); }
+.page-hdr-inner { display: flex; justify-content: space-between; align-items: flex-end; }
+.page-title { font-size: 28px; font-weight: 800; color: var(--ink); letter-spacing: -0.01em; }
+.page-sub { font-size: 14px; color: var(--gray); margin-top: 4px; font-weight: 600; }
+.hdr-stats { display: flex; gap: 14px; }
+.hstat { text-align: center; background: #fff; border: 2px solid var(--ink); border-radius: 12px; padding: 10px 18px; }
+.hstat-n { font-size: 20px; font-weight: 800; color: var(--ink); }
+.hstat-l { font-size: 11px; color: var(--gray); margin-top: 2px; font-weight: 600; }
+
+.filter-bar { display: flex; align-items: center; gap: 8px; padding: 16px 40px; border-bottom: 2px solid var(--ink); overflow-x: auto; background: #fff; }
+.filter-pill { font-size: 13px; padding: 7px 16px; border-radius: 20px; cursor: pointer; white-space: nowrap; border: 2px solid var(--ink); color: var(--ink); background: #fff; font-family: inherit; font-weight: 700; transition: all 0.15s; }
+.filter-pill:hover { background: var(--yellow-light); }
+.filter-pill.active { background: var(--coral); border-color: var(--ink); color: #fff; }
+.filter-sep { width: 2px; height: 20px; background: var(--line); flex-shrink: 0; }
+.sort-select { font-family: inherit; font-size: 13px; background: #fff; color: var(--ink); border: 2px solid var(--ink); border-radius: 10px; padding: 6px 12px; cursor: pointer; margin-left: auto; flex-shrink: 0; font-weight: 700; }
+
+.main { display: grid; grid-template-columns: 230px 1fr; gap: 0; }
+.sidebar { border-right: 2px solid var(--ink); padding: 24px 20px; background: #fff; }
+.sb-section { margin-bottom: 24px; }
+.sb-label { font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--gray); margin-bottom: 10px; font-weight: 800; display: block; }
+.sb-opts { display: flex; flex-direction: column; gap: 4px; }
+.sb-opt { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 10px; cursor: pointer; font-size: 13px; color: var(--gray); transition: all 0.15s; font-weight: 700; }
+.sb-opt:hover { background: var(--cream); color: var(--ink); }
+.sb-opt.active { background: var(--teal-light); color: var(--ink); }
+.sb-count { font-size: 11px; color: var(--gray); background: var(--cream); padding: 2px 8px; border-radius: 10px; font-weight: 700; }
+.sb-opt.active .sb-count { background: var(--teal); color: #fff; }
+.post-cta { background: var(--ink); border-radius: 14px; padding: 20px; text-align: center; margin-top: 4px; }
+.post-cta h4 { font-size: 15px; color: #fff; margin-bottom: 5px; font-weight: 800; }
+.post-cta p { font-size: 12px; color: rgba(255,255,255,0.55); margin-bottom: 14px; line-height: 1.5; font-weight: 500; }
+.post-cta .btn-sm { font-size: 13px; padding: 10px 14px; background: var(--yellow); color: var(--ink); border: 2px solid var(--ink); border-radius: 10px; cursor: pointer; width: 100%; font-weight: 800; box-shadow: 3px 3px 0 rgba(255,255,255,0.2); }
+
+.list-area { padding: 24px 32px; background: var(--cream); }
+.list-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.list-count { font-size: 14px; color: var(--gray); font-weight: 700; }
+.list-count strong { color: var(--ink); }
+.sort-btns { display: flex; gap: 6px; }
+.sort-btn { font-size: 12px; padding: 6px 14px; border-radius: 10px; cursor: pointer; font-family: inherit; border: 2px solid var(--ink); background: #fff; color: var(--ink); font-weight: 700; }
+.sort-btn.active { background: var(--ink); color: #fff; }
+
+.demand-list { display: flex; flex-direction: column; gap: 14px; }
+.dcard { border: 2px solid var(--ink); border-radius: 16px; padding: 20px 22px; cursor: pointer; transition: all 0.15s; text-decoration: none; display: block; color: inherit; background: #fff; }
+.dcard:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--ink); }
+.dc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.dc-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.dc-tag { font-size: 11px; padding: 4px 10px; border-radius: 8px; font-weight: 800; border: 1.5px solid var(--ink); }
+.tag-hot { background: var(--coral); color: #fff; border-color: var(--ink); }
+.tag-new { background: var(--teal); color: #fff; border-color: var(--ink); }
+.tag-urgent { background: var(--yellow); color: var(--ink); border-color: var(--ink); }
+.tag-gray { background: var(--cream); color: var(--gray); border-color: var(--line); }
+.dc-time { font-size: 12px; color: var(--gray); font-weight: 600; }
+.dc-title { font-size: 17px; font-weight: 800; color: var(--ink); margin-bottom: 6px; }
+.dc-desc { font-size: 13px; color: var(--gray); line-height: 1.65; margin-bottom: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-weight: 500; }
+.dc-foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.dc-meta { display: flex; gap: 16px; flex-wrap: wrap; }
+.dc-mi { font-size: 12px; color: var(--gray); display: flex; align-items: center; gap: 4px; font-weight: 700; }
+.dc-price { font-size: 18px; font-weight: 800; color: var(--coral); }
+.dc-bids { display: flex; align-items: center; gap: 8px; }
+.avs { display: flex; }
+.av { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff; font-size: 9px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin-left: -7px; color: #fff; }
+.av:first-child { margin-left: 0; }
+.av-c1 { background: var(--coral); } .av-c2 { background: var(--teal); } .av-c3 { background: #F5A623; }
+.bids-t { font-size: 12px; color: var(--gray); font-weight: 700; }
+
+@media (max-width: 900px) {
+  .page-hdr-inner { flex-direction: column; gap: 16px; align-items: flex-start; }
+  .hdr-stats { width: 100%; }
+  .hstat { flex: 1; }
+  .main { grid-template-columns: 1fr; }
+  .sidebar { border-right: none; border-bottom: 2px solid var(--ink); }
+  .list-area { padding: 20px; }
+  .filter-bar { padding: 12px 20px; }
+  .page-hdr { padding: 20px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo"><div class="logo-mark">码</div>码上好</a>
+  <ul class="nav-links">
+    <li><a href="index.html">首页</a></li>
+    <li><a href="demand.html" class="active">需求广场</a></li>
+    <li><a href="developers.html">开发者</a></li>
+    <li><a href="join.html">商家入驻</a></li>
+  </ul>
+  <div class="nav-btns">
+    <a href="#" class="btn btn-ghost">登录</a>
+    <a href="post-demand.html" class="btn btn-primary">+ 发布需求</a>
+  </div>
+</nav>
+
+<div class="page-hdr">
+  <div class="page-hdr-inner">
+    <div>
+      <div class="page-title">需求广场 📋</div>
+      <div class="page-sub">浏览客户发布的开发需求，找到适合你的项目</div>
+    </div>
+    <div class="hdr-stats">
+      <div class="hstat"><div class="hstat-n">47</div><div class="hstat-l">本周新增</div></div>
+      <div class="hstat"><div class="hstat-n">招募中</div><div class="hstat-l">开发者入驻</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <button class="filter-pill active">全部</button>
+  <button class="filter-pill">微信小程序</button>
+  <button class="filter-pill">Web网站</button>
+  <button class="filter-pill">AI自动化</button>
+  <button class="filter-pill">管理系统</button>
+  <button class="filter-pill">H5落地页</button>
+  <button class="filter-pill">数据看板</button>
+  <div class="filter-sep"></div>
+  <button class="filter-pill">¥500以下</button>
+  <button class="filter-pill">¥500–5000</button>
+  <button class="filter-pill">¥5000+</button>
+  <select class="sort-select">
+    <option>最新发布</option>
+    <option>预算最高</option>
+    <option>报价最少</option>
+  </select>
+</div>
+
+<div class="main">
+  <aside class="sidebar">
+    <div class="sb-section">
+      <span class="sb-label">项目类型</span>
+      <div class="sb-opts">
+        <div class="sb-opt active">全部类型 <span class="sb-count">283</span></div>
+        <div class="sb-opt">微信小程序 <span class="sb-count">89</span></div>
+        <div class="sb-opt">Web网站 <span class="sb-count">64</span></div>
+        <div class="sb-opt">管理系统 <span class="sb-count">51</span></div>
+        <div class="sb-opt">AI自动化 <span class="sb-count">43</span></div>
+        <div class="sb-opt">H5落地页 <span class="sb-count">36</span></div>
+      </div>
+    </div>
+    <div class="sb-section">
+      <span class="sb-label">预算范围</span>
+      <div class="sb-opts">
+        <div class="sb-opt">¥500 以下</div>
+        <div class="sb-opt">¥500–2,000</div>
+        <div class="sb-opt">¥2,000–5,000</div>
+        <div class="sb-opt">¥5,000–20,000</div>
+        <div class="sb-opt">¥20,000 以上</div>
+      </div>
+    </div>
+    <div class="sb-section">
+      <span class="sb-label">交付周期</span>
+      <div class="sb-opts">
+        <div class="sb-opt">3天内</div>
+        <div class="sb-opt">7天内</div>
+        <div class="sb-opt">14天内</div>
+        <div class="sb-opt">时间灵活</div>
+      </div>
+    </div>
+    <div class="post-cta">
+      <h4>有需求要发布？🚀</h4>
+      <p>让平台认证开发者主动来找你报价</p>
+      <a href="post-demand.html" class="btn-sm" style="display:block;text-decoration:none;text-align:center">免费发布 →</a>
+    </div>
+  </aside>
+
+  <div class="list-area">
+    <div class="list-top">
+      <div class="list-count">暂无需求，<strong>成为第一个发布的人</strong></div>
+      <div class="sort-btns">
+        <button class="sort-btn active">最新</button>
+        <button class="sort-btn">预算↑</button>
+        <button class="sort-btn">报价少</button>
+      </div>
+    </div>
+    <div class="demand-list">
+
+      <a href="#" class="dcard">
+        <div class="dc-top">
+          <div class="dc-tags">
+            <span class="dc-tag tag-hot">🔥 热门</span>
+            <span class="dc-tag tag-gray">微信小程序</span>
+            <span class="dc-tag tag-gray">餐饮</span>
+          </div>
+          <span class="dc-time">2小时前</span>
+        </div>
+        <div class="dc-title">餐厅点餐 + 会员积分系统（微信小程序）</div>
+        <div class="dc-desc">需要一个完整的餐厅小程序，功能包括扫码点餐、在线支付、积分兑换、后台菜单管理、订单管理。界面参考海底捞风格。</div>
+        <div class="dc-foot">
+          <div class="dc-meta">
+            <span class="dc-mi"><span class="dc-price">¥3,000–5,000</span></span>
+            <span class="dc-mi">📅 7天内</span>
+            <span class="dc-mi">🔒 资金托管</span>
+          </div>
+          <div class="dc-bids">
+            <div class="avs"><div class="av av-c1">张</div><div class="av av-c2">林</div><div class="av av-c3">王</div></div>
+            <span class="bids-t">4人报价</span>
+          </div>
+        </div>
+      </a>
+
+      <a href="#" class="dcard">
+        <div class="dc-top">
+          <div class="dc-tags">
+            <span class="dc-tag tag-new">✦ 最新</span>
+            <span class="dc-tag tag-gray">AI自动化</span>
+          </div>
+          <span class="dc-time">5小时前</span>
+        </div>
+        <div class="dc-title">对接DeepSeek做AI客服机器人，嵌入现有官网</div>
+        <div class="dc-desc">WordPress网站右下角加AI客服对话框，接入DeepSeek API，能回答产品问题。需要训练自有知识库，支持多轮对话。</div>
+        <div class="dc-foot">
+          <div class="dc-meta">
+            <span class="dc-mi"><span class="dc-price">¥1,500–3,000</span></span>
+            <span class="dc-mi">📅 3天内</span>
+            <span class="dc-mi">🔒 资金托管</span>
+          </div>
+          <div class="dc-bids">
+            <div class="avs"><div class="av av-c2">陈</div><div class="av av-c1">赵</div></div>
+            <span class="bids-t">2人报价</span>
+          </div>
+        </div>
+      </a>
+
+      <a href="#" class="dcard">
+        <div class="dc-top">
+          <div class="dc-tags">
+            <span class="dc-tag tag-urgent">⚡ 急单</span>
+            <span class="dc-tag tag-gray">管理系统</span>
+          </div>
+          <span class="dc-time">1天前</span>
+        </div>
+        <div class="dc-title">员工考勤 + 排班管理系统（50人公司内部使用）</div>
+        <div class="dc-desc">需要手机端打卡签到、排班管理、考勤统计报表导出。Admin后台要简洁好操作，不需要太复杂，能用就行。</div>
+        <div class="dc-foot">
+          <div class="dc-meta">
+            <span class="dc-mi"><span class="dc-price">¥2,000–4,000</span></span>
+            <span class="dc-mi">📅 5天内</span>
+            <span class="dc-mi">🔒 资金托管</span>
+          </div>
+          <div class="dc-bids">
+            <div class="avs"><div class="av av-c3">刘</div></div>
+            <span class="bids-t">1人报价</span>
+          </div>
+        </div>
+      </a>
+
+      <a href="#" class="dcard">
+        <div class="dc-top">
+          <div class="dc-tags">
+            <span class="dc-tag tag-gray">H5落地页</span>
+            <span class="dc-tag tag-gray">营销</span>
+          </div>
+          <span class="dc-time">2天前</span>
+        </div>
+        <div class="dc-title">618促销活动H5落地页（动效要丰富，适配微信）</div>
+        <div class="dc-desc">产品展示、倒计时、优惠券领取功能，要有酷炫的滚动动效，适配微信内浏览器。提供设计稿，只需切图实现。</div>
+        <div class="dc-foot">
+          <div class="dc-meta">
+            <span class="dc-mi"><span class="dc-price">¥800–1,500</span></span>
+            <span class="dc-mi">📅 2天内</span>
+            <span class="dc-mi">🔒 资金托管</span>
+          </div>
+          <div class="dc-bids">
+            <div class="avs"><div class="av av-c1">周</div><div class="av av-c2">吴</div><div class="av av-c3">徐</div></div>
+            <span class="bids-t">5人报价</span>
+          </div>
+        </div>
+      </a>
+
+      <a href="#" class="dcard">
+        <div class="dc-top">
+          <div class="dc-tags">
+            <span class="dc-tag tag-gray">数据看板</span>
+            <span class="dc-tag tag-gray">AI分析</span>
+          </div>
+          <span class="dc-time">3天前</span>
+        </div>
+        <div class="dc-title">销售数据可视化看板 + AI分析报告自动生成</div>
+        <div class="dc-desc">MySQL数据库存着每天的销售数据，需要做数据看板（折线图、柱状图、地图分布），每天自动用AI生成销售分析报告发到邮件。</div>
+        <div class="dc-foot">
+          <div class="dc-meta">
+            <span class="dc-mi"><span class="dc-price">¥5,000–10,000</span></span>
+            <span class="dc-mi">📅 14天内</span>
+            <span class="dc-mi">🔒 资金托管</span>
+          </div>
+          <div class="dc-bids">
+            <div class="avs"><div class="av av-c2">孙</div><div class="av av-c1">郑</div></div>
+            <span class="bids-t">2人报价</span>
+          </div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.filter-pill').forEach(el => {
+  el.addEventListener('click', () => {
+    el.parentElement.querySelectorAll('.filter-pill').forEach(e => e.classList.remove('active'));
+    el.classList.add('active');
+  });
+});
+document.querySelectorAll('.sort-btn').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.sort-btn').forEach(e => e.classList.remove('active'));
+    el.classList.add('active');
+  });
+});
+document.querySelectorAll('.sidebar .sb-opts').forEach(group => {
+  group.querySelectorAll('.sb-opt').forEach(el => {
+    el.addEventListener('click', () => {
+      group.querySelectorAll('.sb-opt').forEach(e => e.classList.remove('active'));
+      el.classList.add('active');
+    });
+  });
+});
+</script>
+
+</body>
+</html>

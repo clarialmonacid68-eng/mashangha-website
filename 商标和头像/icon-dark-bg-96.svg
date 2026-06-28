@@ -1,0 +1,13 @@
+<svg width="96" height="96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" role="img">
+  <title>码上好 深色背景图标</title>
+  <desc>码上好AI开发平台图标深色背景版，适用于深色APP图标、深色公众号头像</desc>
+  <!-- 深色背景 -->
+  <rect width="96" height="96" fill="#0A1628" rx="20"/>
+  <!-- M图形 白色 -->
+  <line x1="14" y1="76" x2="14" y2="20" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+  <line x1="82" y1="76" x2="82" y2="20" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+  <line x1="48" y1="76" x2="48" y2="46" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+  <path d="M14 20 L48 46 L82 20" fill="none" stroke="white" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- 亮蓝底线 -->
+  <line x1="14" y1="84" x2="82" y2="84" stroke="#60A5FA" stroke-width="4" stroke-linecap="round"/>
+</svg>
