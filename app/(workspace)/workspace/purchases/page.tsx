@@ -45,7 +45,7 @@ export default async function PurchasesPage({
     redirect("/login");
   }
 
-  const purchases = await listBuyerPurchases(supabase);
+  const purchases = await listBuyerPurchases(supabase, user.id);
 
   return (
     <div className="workspace-page">

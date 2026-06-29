@@ -108,6 +108,22 @@ describe("product purchase services", () => {
     });
   });
 
+  it("uses a provided buyer id without requiring another auth lookup", async () => {
+    const service = new FakeProductService(
+      { data: null, error: null },
+      null,
+    );
+
+    await expect(
+      listBuyerPurchases(service as never, "known-buyer"),
+    ).resolves.toEqual([]);
+
+    expect(service.calls).toContainEqual({
+      method: "eq",
+      value: { column: "buyer_id", value: "known-buyer" },
+    });
+  });
+
   it("requires a logged-in buyer before listing purchases", async () => {
     const service = new FakeProductService(
       { data: null, error: null },

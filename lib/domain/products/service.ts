@@ -183,14 +183,14 @@ export async function confirmProductPurchase(
   return data;
 }
 
-export async function listBuyerPurchases(supabase: Service) {
-  const buyerId = await getCurrentUserId(supabase);
+export async function listBuyerPurchases(supabase: Service, buyerId?: string) {
+  const resolvedBuyerId = buyerId ?? (await getCurrentUserId(supabase));
   const { data, error } = await supabase
     .from("product_purchases")
     .select(
       "id, product_id, amount_cents, status, delivered_payload, created_at, products(title)",
     )
-    .eq("buyer_id", buyerId)
+    .eq("buyer_id", resolvedBuyerId)
     .order("created_at", { ascending: false });
 
   if (error) {
