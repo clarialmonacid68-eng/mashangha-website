@@ -26,12 +26,14 @@ for (const [path, heading] of publicPages) {
 test("homepage exposes real primary actions", async ({ page }) => {
   await page.goto("/");
   await expect(
-    page.getByRole("link", { name: "发布开发需求" }),
+    page
+      .getByRole("link", { name: "发布开发需求" })
+      .filter({ hasText: "发布开发需求" })
+      .first(),
   ).toHaveAttribute("href", "/workspace/customer/demands/new");
-  await expect(page.getByRole("link", { name: "浏览开发者" })).toHaveAttribute(
-    "href",
-    "/developers",
-  );
+  await expect(
+    page.getByRole("link", { name: "浏览开发者" }).first(),
+  ).toHaveAttribute("href", "/developers");
 });
 
 test("mobile navigation exposes marketplace and rules links", async ({
