@@ -60,6 +60,10 @@ export async function listPublishedProducts(
   const { data, error } = await query;
 
   if (error) {
+    if (isMissingOptionalMarketplaceTable(error.message)) {
+      return [];
+    }
+
     throw new Error(error.message);
   }
 

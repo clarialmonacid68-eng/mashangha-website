@@ -199,6 +199,18 @@ describe("public product services", () => {
     expect(service.calls).toContainEqual({ method: "limit", value: 24 });
   });
 
+  it("returns an empty public product list when the optional products table is missing", async () => {
+    const service = new FakeProductService({
+      data: null,
+      error: {
+        message:
+          "Could not find the table 'public.products' in the schema cache",
+      },
+    });
+
+    await expect(listPublishedProducts(service as never)).resolves.toEqual([]);
+  });
+
   it("applies public product filters after parsing", async () => {
     const service = new FakeProductService();
 
