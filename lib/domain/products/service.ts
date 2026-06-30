@@ -194,8 +194,19 @@ export async function listBuyerPurchases(supabase: Service, buyerId?: string) {
     .order("created_at", { ascending: false });
 
   if (error) {
+    if (isMissingOptionalMarketplaceTable(error.message)) {
+      return [];
+    }
+
     throw new Error(error.message);
   }
 
   return data ?? [];
+}
+
+function isMissingOptionalMarketplaceTable(message: string) {
+  return (
+    message.includes("public.product_purchases") ||
+    message.includes("public.products")
+  );
 }

@@ -146,6 +146,30 @@ describe("product purchase services", () => {
       "database unavailable",
     );
   });
+
+  it("returns an empty list when the optional purchases table is missing", async () => {
+    const service = new FakeProductService({
+      data: null,
+      error: {
+        message:
+          "Could not find the table 'public.product_purchases' in the schema cache",
+      },
+    });
+
+    await expect(listBuyerPurchases(service as never)).resolves.toEqual([]);
+  });
+
+  it("returns an empty list when the optional products join table is missing", async () => {
+    const service = new FakeProductService({
+      data: null,
+      error: {
+        message:
+          "Could not find the table 'public.products' in the schema cache",
+      },
+    });
+
+    await expect(listBuyerPurchases(service as never)).resolves.toEqual([]);
+  });
 });
 
 describe("public product services", () => {
