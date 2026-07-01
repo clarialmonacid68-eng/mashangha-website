@@ -34,6 +34,13 @@ async function startPurchase(formData: FormData) {
 
   const productId = String(formData.get("productId") ?? "");
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
 
   try {
     await purchaseProduct(supabase, productId);
