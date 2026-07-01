@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/lib/db/types";
-import { logBusinessEvent } from "@/lib/observability/logger";
+import { logBusinessEvent, logError } from "@/lib/observability/logger";
 import { parseProductInput, type ProductInput } from "@/lib/domain/products/schema";
 
 type Service = SupabaseClient<Database>;
@@ -61,6 +61,7 @@ export async function listPublishedProducts(
 
   if (error) {
     if (isMissingOptionalMarketplaceTable(error.message)) {
+      logMissingOptionalMarketplaceSchema("listPublishedProducts", error);
       return [];
     }
 
@@ -199,6 +200,7 @@ export async function listBuyerPurchases(supabase: Service, buyerId?: string) {
 
   if (error) {
     if (isMissingOptionalMarketplaceTable(error.message)) {
+      logMissingOptionalMarketplaceSchema("listBuyerPurchases", error);
       return [];
     }
 
@@ -213,4 +215,10 @@ function isMissingOptionalMarketplaceTable(message: string) {
     message.includes("public.product_purchases") ||
     message.includes("public.products")
   );
+}
+
+function logMissingOptionalMarketplaceSchema(operation: string, error: unknown) {
+  logError("products.optional_marketplace_schema_missing", error, {
+    operation,
+  });
 }

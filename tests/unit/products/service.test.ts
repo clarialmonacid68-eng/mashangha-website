@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   getPublishedProduct,
@@ -148,6 +148,7 @@ describe("product purchase services", () => {
   });
 
   it("returns an empty list when the optional purchases table is missing", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const service = new FakeProductService({
       data: null,
       error: {
@@ -157,6 +158,17 @@ describe("product purchase services", () => {
     });
 
     await expect(listBuyerPurchases(service as never)).resolves.toEqual([]);
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining(
+        '"context":"products.optional_marketplace_schema_missing"',
+      ),
+    );
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('"operation":"listBuyerPurchases"'),
+    );
+
+    errorSpy.mockRestore();
   });
 
   it("returns an empty list when the optional products join table is missing", async () => {
@@ -200,6 +212,7 @@ describe("public product services", () => {
   });
 
   it("returns an empty public product list when the optional products table is missing", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const service = new FakeProductService({
       data: null,
       error: {
@@ -209,6 +222,17 @@ describe("public product services", () => {
     });
 
     await expect(listPublishedProducts(service as never)).resolves.toEqual([]);
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining(
+        '"context":"products.optional_marketplace_schema_missing"',
+      ),
+    );
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('"operation":"listPublishedProducts"'),
+    );
+
+    errorSpy.mockRestore();
   });
 
   it("applies public product filters after parsing", async () => {
