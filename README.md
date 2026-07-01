@@ -1,91 +1,141 @@
-# 码上好 AI开发平台 — 部署指南（方案C · 活泼友好风）
+# 码上好 AI 开发者服务平台
 
-## 文件说明
+码上好是一个面向 AI 应用开发需求的撮合与交付平台。当前代码库已经从早期静态 HTML 原型升级为 Next.js + Supabase 的全栈应用，支持需求发布、开发者入驻、报价、订单协作、模拟全额付款、交付、验收、评价、后台审核与风控治理等第一阶段核心流程。
 
-| 文件 | 页面 |
-|------|------|
-| `index.html` | 首页（平台介绍、使用流程、精选开发者、入驻CTA） |
-| `demand.html` | 需求广场（需求列表 + 筛选筹选） |
-| `post-demand.html` | 发布需求流程（3步表单） |
-| `developers.html` | 开发者列表（筛选 + 卡片网格） |
-| `developer.html` | 开发者主页示例（张明） |
-| `join.html` | 商家（开发者）入驻申请页 |
-| `styles.css` | 全站共享样式（导航、按钮、页脚等） |
+## 当前状态
 
-所有页面通过相对路径互相链接，整体作为一个静态网站文件夹直接可用，无需任何构建步骤。
+- 生产域名：`https://www.mshcode.com`
+- 部署形态：腾讯云服务器运行 Next.js，Supabase 托管 Auth / PostgreSQL / Storage
+- 数据库：Supabase PostgreSQL，迁移文件位于 `supabase/migrations/`
+- 支付：当前必须保持 `PAYMENT_PROVIDER=mock`，仅用于模拟全额付款流程
+- 真实资金：微信支付、退款、分账、对账尚未接入，不得对外宣传为真实资金托管或担保交易
+- 生产烟测：核心 mock 交易链路已通过一次生产烟测并完成清理；产品购买、数字员工需求、文件、通知、真实支付仍需继续补充验收
 
----
+## 技术栈
 
-## 零基础部署方案（推荐）
+- Next.js `16.2.9`
+- React `19`
+- TypeScript
+- Supabase JS / SSR
+- PostgreSQL + RLS + RPC
+- Tailwind CSS
+- Vitest
+- Playwright
+- 腾讯云 + Nginx + PM2
 
-### 第一步：买域名
-1. 打开 [阿里云万网](https://wanwang.aliyun.com/)
-2. 搜索你想要的域名，如 `mashangha.cn` 或 `mashangha.com`
-3. 购买，约 ¥55–200/年
-4. 完成实名认证（国内域名必须）
+## 目录说明
 
-### 第二步：部署到 Vercel（免费）
-1. 打开 [vercel.com](https://vercel.com) 注册账号（建议用 GitHub 登录）
-2. 新建一个 GitHub 仓库，把 `mashangha-c` 文件夹里的全部文件（6个html + styles.css）上传进去
-3. 在 Vercel 里点 "Add New Project" → 选择刚才的 GitHub 仓库 → Deploy
-4. 几秒钟后网站就上线了，会自动分配一个 `xxx.vercel.app` 的临时域名，可以先用这个测试
+| 路径 | 说明 |
+| --- | --- |
+| `app/` | Next.js App Router 页面、API routes、workspace/admin 路由 |
+| `lib/domain/` | 领域服务、查询服务、表单解析、业务规则 |
+| `lib/db/types.ts` | Supabase 数据库类型，需随 schema 同步 |
+| `supabase/migrations/` | 数据库迁移、RLS、RPC、约束 |
+| `tests/unit/` | 领域服务与组件单元测试 |
+| `tests/integration/` | Supabase/RPC 集成测试，缺少本地 env 时会按既有规则 skip |
+| `tests/e2e/` | Playwright E2E |
+| `docs/deployment/` | 腾讯云、生产环境、烟测部署说明 |
+| `docs/reviews/` | 审查记录 |
+| `docs/agent-handoffs/` | Codex / Claude 协作交接记录 |
 
-### 第三步：绑定自己的域名
-1. 在 Vercel 项目设置里 → Domains → 添加你买的域名
-2. 按提示去阿里云 DNS 控制台添加一条 CNAME 记录（Vercel会给出具体值）
-3. 等待 5–10 分钟生效即可
+## 本地开发
 
-**完成！** 你的网站就正式上线，可以分享给朋友和潜在用户体验了。
+安装依赖：
 
----
+```bash
+pnpm install
+```
 
-## 当前版本的定位
+启动本地 Supabase：
 
-现在这套是**静态原型/演示版**：
+```bash
+pnpm exec supabase start
+```
 
-- 页面上的开发者信息、需求列表都是写死的示例数据
-- "发布需求"、"邀请报价"、"提交入驻申请" 等按钮目前点击只会弹出提示框，不会真正保存数据
-- 用于：① 给自己/团队看效果、② 给潜在用户/投资人做演示、③ 收集第一批"种子开发者"和"种子需求"的兴趣登记（可以先用一个简单的微信群/表单收集）
+启动 Next.js：
 
----
+```bash
+pnpm dev
+```
 
-## 下一步：从原型到能跑的产品
+常用检查：
 
-当你准备好真正上线收集用户数据时，建议按以下顺序加功能：
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+```
 
-### 1. 用户系统（登录/注册）
-推荐用 [Supabase](https://supabase.com)（免费额度够用很久），支持手机号/微信登录，自带数据库和权限管理。
+一键验证：
 
-### 2. 数据库（替换写死的数据）
-把首页/需求广场/开发者列表里的示例卡片换成从 Supabase 数据库读取的真实数据，主要建这几张表：
-- `users`（用户：客户/开发者）
-- `demands`（需求）
-- `quotes`（报价）
-- `orders`（订单/项目）
+```bash
+pnpm verify
+```
 
-具体字段设计可以参考之前生成的《码上好AI平台_PRD_v1.0.docx》中的数据模型部分。
+注意：在受限沙箱内，Next.js Turbopack build 可能因为本地端口绑定权限失败；在正常终端或提升权限环境下重新运行 `pnpm build` 即可确认构建。
 
-### 3. 表单提交功能
-让"发布需求"、"入驻申请"等表单真正把数据写入数据库，而不是弹窗演示。
+## 数据库迁移与类型
 
-### 4. 支付与资金托管
-对接微信支付/支付宝商户号，实现"客户付款 → 平台托管 → 验收后放款给开发者"的资金流转，这一步建议找专业开发者协助（合规要求较多）。
+迁移文件是数据库结构的源头：
 
-### 5. 消息通知
-开发者收到新需求、客户收到新报价时，通过短信（阿里云短信服务）或微信服务号推送提醒。
+```bash
+supabase/migrations/*.sql
+```
 
----
+应用新增字段、约束、RLS、RPC 时，应同时：
 
-## 技术栈建议（与PRD一致）
+1. 新增迁移文件。
+2. 本地应用迁移并确认 `supabase_migrations.schema_migrations` 记录一致。
+3. 同步 `lib/db/types.ts`。
+4. 运行 `pnpm lint && pnpm typecheck && pnpm test && pnpm build`。
 
-- **前端**：Next.js + Tailwind CSS（在现有HTML基础上重构为React组件）
-- **后端/数据库**：Supabase（PostgreSQL + 认证 + 存储）
-- **部署**：Vercel
-- **域名**：阿里云万网
-- **预估MVP月成本**：¥100–200（域名 + 少量云服务费用，前期免费额度基本够用）
+当前本机 Supabase CLI `gen types --local` 在未登录 Supabase access token 时会报 `LegacyPlatformAuthRequiredError`。可用本地 `pg-meta` 生成类型作为替代路径，前提是本地 Supabase 已启动：
 
----
+```bash
+docker exec supabase_pg_meta_mahcod-website node -e "(
+  async () => {
+    const r = await fetch('http://127.0.0.1:8080/generators/typescript?included_schemas=public')
+    process.stdout.write(await r.text())
+  }
+)()" > lib/db/types.ts
+```
 
-## 联系支持
+生成后如文件末尾出现多余空行，可运行：
 
-如需进一步开发帮助，可以直接在"码上好"平台发布需求，找认证AI开发者协助 😄
+```bash
+perl -0pi -e 's/\n\z//' lib/db/types.ts
+```
+
+## 生产部署要点
+
+腾讯云部署说明见：
+
+- `docs/deployment/tencent-cloud-preflight.md`
+- `docs/deployment/tencent-cloud-server-init.md`
+
+生产环境必须配置：
+
+```bash
+NEXT_PUBLIC_APP_URL=https://www.mshcode.com
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+PAYMENT_PROVIDER=mock
+ORDER_FILE_MAX_BYTES=52428800
+```
+
+安全边界：
+
+- `SUPABASE_SERVICE_ROLE_KEY` 只能放服务器环境变量，不得提交到仓库。
+- 当前阶段不要设置 `PAYMENT_PROVIDER=wechat`。
+- 不要把 mock 支付描述成真实扣款、资金托管或担保交易。
+- 生产数据库迁移需要通过正式 Supabase 迁移流程或 SQL Editor 明确执行，代码推送不会自动改变数据库结构。
+
+## 已知待办
+
+- 将 `202607010001_allow_digital_employee_demands.sql` 应用到生产 Supabase 数据库。
+- 补充 `/digital-employees` 与数字员工需求链路 E2E。
+- 补充 `/products`、产品购买与交付链路 E2E。
+- 更新生产运维 runbook 和告警/健康检查。
+- 真实微信支付、退款、分账、对账在商户准入完成前保持 blocked。

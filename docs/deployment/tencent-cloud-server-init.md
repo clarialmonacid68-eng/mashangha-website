@@ -1,8 +1,8 @@
 # 腾讯云 Ubuntu 24.04 服务器初始化步骤
 
-**日期：** 2026-06-19
+**日期：** 2026-07-01
 **服务器：** 腾讯云大陆北京轻量应用服务器，Ubuntu 24.04 LTS，2 核 / 2GB / 40GB SSD，公网 IPv4 `82.157.139.80`
-**当前阶段：** ICP 备案进行中。先做公网 IP 访问测试，不把 `www.mshcode.com` 正式解析到大陆服务器。
+**当前阶段：** 生产域名 `https://www.mshcode.com` 已可访问。本文仍保留从零初始化步骤，也可作为重装、迁移或灾备恢复 runbook。
 
 ## 0. 前提
 
@@ -289,7 +289,7 @@ curl -I http://82.157.139.80
 
 ## 14. 部署后 smoke test
 
-备案完成前用公网 IP 测：
+域名切换前可用公网 IP 测：
 
 ```text
 http://82.157.139.80/
@@ -304,6 +304,7 @@ http://82.157.139.80/rules/service
 - 静态资源正常加载
 - `/demands` 可打开
 - `/developers` 可打开
+- `/products` 可打开
 - `/rules/service` 可打开
 - Nginx 日志无大量 500
 
@@ -315,9 +316,9 @@ sudo tail -f /var/log/nginx/access.log
 sudo tail -f /var/log/nginx/error.log
 ```
 
-## 15. 备案完成后的域名切换
+## 15. 域名切换与 HTTPS
 
-备案完成后再执行：
+备案完成并准备正式切换域名时执行：
 
 1. DNS：把 `www.mshcode.com` 解析到腾讯云服务器公网 IP。
 2. 修改服务器 `.env.production`：
@@ -347,12 +348,23 @@ https://www.mshcode.com
 https://www.mshcode.com/auth/callback
 ```
 
+切换后用生产域名复查：
+
+```bash
+curl -I https://www.mshcode.com/
+curl -I https://www.mshcode.com/demands
+curl -I https://www.mshcode.com/developers
+curl -I https://www.mshcode.com/products
+curl -I https://www.mshcode.com/sitemap.xml
+```
+
+还需要做一次登录态 smoke test：注册/登录、发布需求、后台审核、开发者报价、客户选择报价、mock 全额付款。当前阶段只验证 mock 支付，不接真实资金。
+
 ## 16. 当前不要做
 
-ICP备案完成前不要：
+当前第一阶段不要：
 
-- 把 `www.mshcode.com` 解析到大陆服务器
-- 对外宣布正式上线
+- 对外宣布真实资金交易正式上线
 - 接入真实支付
 - 宣传资金托管、担保交易、保证退款、自动分账
 

@@ -1,11 +1,11 @@
 # 腾讯云部署前检查清单
 
-**日期：** 2026-06-19
+**日期：** 2026-07-01
 **适用项目：** `/Users/yangchao/Desktop/mahcod-website`
 **目标域名：** `https://www.mshcode.com/`
 **目标服务器：** 腾讯云轻量应用服务器 / CVM
 **已知服务器信息：** 中国大陆北京地域，Ubuntu 24.04 LTS，2 核 CPU / 2GB 内存，40GB SSD，200GB/月流量，公网 IPv4 `82.157.139.80`
-**当前建议：** 先完成服务器初始化、环境安装和公网 IP 访问测试；ICP备案完成前，不要把 `www.mshcode.com` 正式解析到该大陆服务器。站点定位仍为“第一阶段模拟交易演示 / 试运营获客站”，不要开放真实支付、真实退款、自动分账或资金托管宣传。
+**当前建议：** 生产域名已可访问，继续保持“第一阶段模拟交易演示 / 试运营获客站”定位；不要开放真实支付、真实退款、自动分账或资金托管宣传。每次发布前必须确认 Supabase 生产迁移已执行，尤其是新增迁移不随代码推送自动生效。
 
 ## 1. 当前代码部署形态
 
@@ -19,10 +19,17 @@
 - 数据/Auth/Storage：当前代码使用 Supabase SDK
 - 支付：当前应保持 `PAYMENT_PROVIDER=mock`
 
-已通过的本地验证：
+最近已通过的本地验证：
 
 - `pnpm verify`
-- `pnpm playwright test`
+- `pnpm build`
+- `pnpm test`
+
+最近已通过的生产烟测：
+
+- `https://www.mshcode.com/`、`/demands`、`/developers`、`/products`、`/login`、`/register` 等公共路由返回 200
+- 核心 mock 交易链路已跑通：客户需求 -> 后台审核 -> 开发者报价 -> 防自选报价 -> 选择第二开发者报价 -> 生成订单 -> mock 全额付款 -> 订单进入 `in_progress`
+- 烟测数据已做软清理
 
 ## 2. 腾讯云部署推荐路线
 
@@ -44,8 +51,8 @@
 - Supabase Auth redirect 配置加入 `https://www.mshcode.com/auth/callback`
 - Supabase Storage 创建私有 bucket：`order-files`
 - 域名 DNS 指向腾讯云 CVM 公网 IP
-- 由于当前服务器在中国大陆北京地域，必须先完成 ICP 备案，再把 `mshcode.com` / `www.mshcode.com` 正式解析到服务器
-- 备案完成后再评估公安备案要求
+- 由于当前服务器在中国大陆北京地域，必须保持 ICP 备案信息真实有效
+- 备案完成后仍需评估并跟进公安联网备案要求
 
 主要风险：
 
@@ -127,7 +134,7 @@ WECHATPAY_NOTIFY_URL=
 
 ## 4. Supabase 生产侧检查
 
-上线前必须确认：
+每次发布前必须确认：
 
 - 已创建生产 Supabase 项目，不能使用本地 CLI key
 - 已执行全部 `supabase/migrations/*.sql`
@@ -139,6 +146,7 @@ WECHATPAY_NOTIFY_URL=
 - 生产 SMTP 已配置或明确暂不开放邮箱 OTP
 - 手机 OTP 服务商已选定；未完成真实号码测试前，不建议开放手机号登录给真实用户
 - Service Role Key 只放在服务器环境变量中，不进入前端、不进入仓库
+- 新增迁移必须在生产 Supabase SQL Editor 或正式迁移流程里执行；仅推送 GitHub 不会改变生产数据库结构
 
 当前生产 Supabase 状态：
 
@@ -148,7 +156,8 @@ WECHATPAY_NOTIFY_URL=
 - Region：Southeast Asia (Singapore)
 - Project URL：`https://lvinajipyscukaemiwys.supabase.co`
 - Storage：已创建私有 bucket `order-files`
-- Database：已在 SQL Editor 执行 `docs/deployment/generated/production-migrations.sql`
+- Database：`docs/deployment/generated/production-migrations.sql` 已重新聚合到最新迁移，可用于新环境初始化；既有生产库仍需明确执行新增迁移
+- 当前待确认迁移：`supabase/migrations/202607010001_allow_digital_employee_demands.sql` 需要应用到生产库，否则数字员工需求提交会被数据库约束拒绝
 - 验证结果：Table Editor 已显示 `audit_logs`、`demands`、`orders`、`payments`、`profiles`、`quotes`、`user_roles` 等 public 表
 - API keys：需要在服务器 `.env.production` 填入兼容当前代码的 `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY`；不要把 `service_role` key 发到聊天窗口或提交到仓库
 
@@ -202,30 +211,24 @@ HTTPS：
 当前已知：
 
 - 用户已有 `mshcode.com`
-- 当前线上站点曾部署在 Vercel `sin1`
-- 现计划部署到腾讯云大陆北京服务器
-- ICP 备案尚未完成
+- 当前生产域名：`https://www.mshcode.com`
+- 当前线上站点已切到腾讯云大陆北京服务器
+- ICP 备案已通过
 
 必须确认：
 
 - `mshcode.com` 域名实名认证状态
-- 因服务器位于中国大陆地域，必须先完成 ICP 备案
-- 备案完成后页脚展示备案号，并链接到工信部备案系统
+- 因服务器位于中国大陆地域，必须持续保持 ICP 备案信息有效
+- 页脚展示备案号，并链接到工信部备案系统
 - DNS 记录：
   - `www` CNAME 或 A 记录指向腾讯云入口
   - 根域 `@` 根据 DNS 服务能力配置 A 记录或跳转
 
-备案完成前建议：
-
-- 不把 `www.mshcode.com` 解析到腾讯云大陆服务器
-- 可以先使用公网 IP 做服务器连通性、Node/Nginx、构建和反代测试
-- 如必须保留线上域名访问，可暂时继续使用当前境外/Vercel 预览站，直到备案完成
-
-当前公网 IP 测试状态：
+当前访问状态：
 
 - 服务器公网 IPv4：`82.157.139.80`
-- `curl -I http://82.157.139.80` 当前无法连接到 80 端口
-- 下一步需要确认腾讯云防火墙/安全组是否开放 80，并登录服务器安装 Nginx、Node.js、pnpm、PM2
+- 生产域名 `https://www.mshcode.com` 已返回 Next.js 应用
+- 公网 IP 仅用于底层连通性排查；正式访问以生产域名和 HTTPS 为准
 
 ## 7. 上线前功能开关
 
@@ -262,20 +265,18 @@ HTTPS：
 
 这些不是写代码能直接绕过的事项：
 
-- ICP 备案尚未完成
-- 腾讯云服务器公网 IP 未提供
-- 生产 Supabase 项目未确认
-- 生产 SMTP 未确认
+- 生产 Supabase 需要执行最新迁移，当前重点是 `202607010001_allow_digital_employee_demands.sql`
+- 生产 SMTP 需要继续确认可达性与送达率
 - 国内手机号 OTP 服务商未确认
 - 微信支付商户、退款、分账、对账未完成准入
 - 生产监控、日志告警、备份策略未落地
+- 产品购买、数字员工需求、文件上传/下载、通知等生产链路还需要补充烟测与 E2E 覆盖
 
 ## 10. 我建议的下一步
 
-1. 立即启动 `mshcode.com` 的腾讯云 ICP 备案流程。
-2. 先选择路线 A，把 Next.js 部署到腾讯云 CVM，Supabase 继续作为后端服务。
-3. 创建生产 Supabase 项目并跑迁移。
-4. 配置 `.env.production`，但保持 `PAYMENT_PROVIDER=mock`。
-5. 在备案完成前，先用公网 IP 完成服务器初始化、Nginx 反代和应用 smoke test。
-6. 备案完成后配置 DNS、HTTPS，并做一轮生产域名 smoke test。
-7. 再决定是否迁移到自托管 Supabase 或腾讯云数据库/COS。
+1. 在生产 Supabase 执行最新迁移，并验证数字员工需求提交不再被约束拒绝。
+2. 补 `/digital-employees` 与产品购买链路 E2E。
+3. 校正并验证生产 SMTP，确保邮箱确认/找回密码可稳定送达。
+4. 建立生产健康检查与告警，至少覆盖首页、登录、需求列表、产品列表、Supabase API、Storage。
+5. 继续保持 `PAYMENT_PROVIDER=mock`，真实支付准入完成后再开独立分支接入。
+6. 再决定是否迁移到自托管 Supabase 或腾讯云数据库/COS。
