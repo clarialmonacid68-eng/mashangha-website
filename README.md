@@ -9,7 +9,7 @@
 - 数据库：Supabase PostgreSQL，迁移文件位于 `supabase/migrations/`
 - 支付：当前必须保持 `PAYMENT_PROVIDER=mock`，仅用于模拟全额付款流程
 - 真实资金：微信支付、退款、分账、对账尚未接入，不得对外宣传为真实资金托管或担保交易
-- 生产烟测：核心 mock 交易链路已通过一次生产烟测并完成清理；产品购买、数字员工需求、文件、通知、真实支付仍需继续补充验收
+- 生产烟测：核心 mock 交易链路已通过一次生产烟测并完成清理；产品购买、数字员工需求已补充本地 E2E 覆盖；文件、通知、真实支付仍需继续补充生产验收
 
 ## 技术栈
 
@@ -134,8 +134,9 @@ ORDER_FILE_MAX_BYTES=52428800
 
 ## 已知待办
 
-- 将 `202607010001_allow_digital_employee_demands.sql` 应用到生产 Supabase 数据库。
-- 补充 `/digital-employees` 与数字员工需求链路 E2E。
-- 补充 `/products`、产品购买与交付链路 E2E。
+- 将最新迁移应用到生产 Supabase 数据库，至少包括：
+  - `202607010001_allow_digital_employee_demands.sql`
+  - `202607010002_grant_product_admin_service_role.sql`
+- 在生产环境复核数字员工需求发布、产品上架审核、产品购买与交付内容查看。
 - 更新生产运维 runbook 和告警/健康检查。
 - 真实微信支付、退款、分账、对账在商户准入完成前保持 blocked。

@@ -157,7 +157,9 @@ WECHATPAY_NOTIFY_URL=
 - Project URL：`https://lvinajipyscukaemiwys.supabase.co`
 - Storage：已创建私有 bucket `order-files`
 - Database：`docs/deployment/generated/production-migrations.sql` 已重新聚合到最新迁移，可用于新环境初始化；既有生产库仍需明确执行新增迁移
-- 当前待确认迁移：`supabase/migrations/202607010001_allow_digital_employee_demands.sql` 需要应用到生产库，否则数字员工需求提交会被数据库约束拒绝
+- 当前待确认迁移：
+  - `supabase/migrations/202607010001_allow_digital_employee_demands.sql`：生产库未执行时，数字员工需求提交会被数据库约束拒绝
+  - `supabase/migrations/202607010002_grant_product_admin_service_role.sql`：生产库未执行时，后台产品审核/发布可能因 service role 缺少 `products` 表权限失败
 - 验证结果：Table Editor 已显示 `audit_logs`、`demands`、`orders`、`payments`、`profiles`、`quotes`、`user_roles` 等 public 表
 - API keys：需要在服务器 `.env.production` 填入兼容当前代码的 `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY`；不要把 `service_role` key 发到聊天窗口或提交到仓库
 
@@ -265,17 +267,17 @@ HTTPS：
 
 这些不是写代码能直接绕过的事项：
 
-- 生产 Supabase 需要执行最新迁移，当前重点是 `202607010001_allow_digital_employee_demands.sql`
+- 生产 Supabase 需要执行最新迁移，当前重点是 `202607010001_allow_digital_employee_demands.sql` 与 `202607010002_grant_product_admin_service_role.sql`
 - 生产 SMTP 需要继续确认可达性与送达率
 - 国内手机号 OTP 服务商未确认
 - 微信支付商户、退款、分账、对账未完成准入
 - 生产监控、日志告警、备份策略未落地
-- 产品购买、数字员工需求、文件上传/下载、通知等生产链路还需要补充烟测与 E2E 覆盖
+- 产品购买、数字员工需求已有本地 E2E 覆盖；生产环境仍需补充业务烟测，文件上传/下载、通知也需要继续验收
 
 ## 10. 我建议的下一步
 
-1. 在生产 Supabase 执行最新迁移，并验证数字员工需求提交不再被约束拒绝。
-2. 补 `/digital-employees` 与产品购买链路 E2E。
+1. 在生产 Supabase 执行最新迁移，并验证数字员工需求提交、产品后台审核发布均不再被数据库权限/约束拒绝。
+2. 在生产环境补做 `/digital-employees`、产品购买、文件上传/下载、通知链路 smoke test。
 3. 校正并验证生产 SMTP，确保邮箱确认/找回密码可稳定送达。
 4. 建立生产健康检查与告警，至少覆盖首页、登录、需求列表、产品列表、Supabase API、Storage。
 5. 继续保持 `PAYMENT_PROVIDER=mock`，真实支付准入完成后再开独立分支接入。
