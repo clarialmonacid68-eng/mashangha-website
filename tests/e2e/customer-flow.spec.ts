@@ -53,3 +53,28 @@ test("customer publishes demand, selects quote and completes mock payment", asyn
   expect(confirmed.order.status).toBe("in_progress");
   expect(confirmed.payment.status).toBe("succeeded");
 });
+
+test("customer can publish a digital employee demand", async () => {
+  const admin = createAdminClient();
+  const customer = await createSignedInUser(admin, "digital-customer");
+
+  const demand = await createDemandDraft(customer.client, {
+    attachments: [],
+    budgetMaxCents: 600_000,
+    budgetMinCents: 200_000,
+    cooperationMode: "fixed_scope",
+    description:
+      "希望定制一个销售数字员工，支持客户问答、线索收集、跟进提醒和基础数据看板。",
+    expectedDeliveryDays: 15,
+    projectType: "digital_employee",
+    title: "销售线索跟进数字员工",
+  });
+
+  expect(demand.project_type).toBe("digital_employee");
+
+  await submitDemandForReview(customer.client, demand.id);
+  const published = await publishDemand(admin, demand.id);
+
+  expect(published.status).toBe("published");
+  expect(published.project_type).toBe("digital_employee");
+});
